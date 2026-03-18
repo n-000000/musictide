@@ -1,0 +1,44 @@
+baseURL: https://musictide.codeberg.page/
+defaultContentLanguage: pt
+defaultContentLanguageInSubdir: false
+enableRobotsTXT: true
+enableEmoji: true
+summaryLength: 0
+
+module:
+  hugoVersion:
+    min: "0.141.0"
+    extended: true
+
+pagination:
+  pagerSize: 100
+
+imaging:
+  anchor: Center
+
+outputs:
+  home:
+    - HTML
+    - RSS
+    - JSON
+
+taxonomies:
+  tag: tags
+  category: categories
+  author: authors
+  series: series
+
+related:
+  threshold: 0
+  toLower: false
+  indices:
+    - name: tags
+      weight: 100
+    - name: categories
+      weight: 100
+    - name: series
+      weight: 50
+    - name: authors
+      weight: 20
+    - name: date
+      weight: 10

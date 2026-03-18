@@ -38,7 +38,7 @@ Migrate the musictide git remote from Codeberg to GitHub and wire up Cloudflare 
 git push origin main (GitHub)
         │
         ▼
-Cloudflare Pages (detects push)
+Cloudflare Pages (detects push via GitHub integration)
         │
         ▼
 hugo --gc --minify  (Hugo 0.158.0 Extended)
@@ -50,70 +50,75 @@ public/ deployed to Cloudflare CDN
 https://musictide.pages.dev (and later custom domain)
 ```
 
-No pipeline YAML required. Cloudflare Pages has native Hugo support — build command and output directory are configured via the Cloudflare Pages dashboard or `wrangler.toml`.
+Cloudflare Pages has native Hugo support. Build command and output directory are set in the Cloudflare Pages dashboard. No pipeline YAML file is required in the repo.
+
+The Hugo version is set as an environment variable in the Pages dashboard (Settings → Environment variables → Production):
+
+```
+HUGO_VERSION = 0.158.0
+```
+
+This is the only mechanism that controls the Hugo version for Git-connected Pages builds — it cannot be set via a file in the repo.
 
 ### Media Storage
 
-R2 bucket `musictide-media` is created with public read access. Hugo templates reference media via a configurable base URL parameter:
+R2 bucket `musictide-media` is created with public read access explicitly enabled in the Cloudflare dashboard (R2 → bucket → Settings → Allow Access). Once enabled, Cloudflare assigns a permanent `pub-<hash>.r2.dev` URL.
+
+Hugo templates reference media via a configurable base URL parameter in `params.yaml`:
 
 ```yaml
 # config/_default/params.yaml addition
 mediaBaseURL: https://pub-<hash>.r2.dev
 ```
 
-All content markdown references images as relative paths under this base. Changing the media host in future (e.g. switching to a VPS) is a one-line config change.
+All content markdown references images as paths relative to this base. Changing the media host in future (e.g. switching to a VPS or custom domain) is a one-line config change.
 
 ### Git Remotes
 
 ```
 origin    → github.com/ngon/musictide   (primary — Cloudflare Pages watches this)
-codeberg  → codeberg.org/ngon/musictide (backup mirror — push manually or via hook)
+codeberg  → codeberg.org/ngon/musictide (backup mirror — best-effort, manual)
 ```
 
-A simple post-push alias (`yarn mirror`) pushes to Codeberg after every GitHub push, keeping it in sync as an off-site backup.
+A `yarn mirror` script pushes to Codeberg on demand. This is intentionally manual and best-effort — it does not auto-run on every push. If a reliable automated mirror is needed in future, a GitHub Actions workflow can be added.
 
 ## Files
 
 | File | Action | Purpose |
 |------|--------|---------|
+| `config/_default/hugo.yaml` | Modify | Update `baseURL` from Codeberg Pages URL to `https://musictide.pages.dev` |
 | `config/_default/params.yaml` | Modify | Add `mediaBaseURL` pointing at R2 public URL |
-| `package.json` | Modify | Add `mirror` script for Codeberg sync |
-| `wrangler.toml` | Create | Declares Hugo version for Cloudflare Pages |
-| `.gitignore` | Modify | Ensure `public/` stays ignored |
+| `package.json` | Modify | Add `mirror` script (`git push codeberg main`) |
+| `.gitignore` | Verify | Confirm `public/` is already ignored (it is) |
 
-## Cloudflare Pages Configuration
+No `wrangler.toml` is needed — Cloudflare Pages build settings are configured entirely in the dashboard for Git-connected projects.
 
-Set in Cloudflare Pages dashboard (or `wrangler.toml`):
+## Cloudflare Pages Dashboard Settings
 
-```toml
-# wrangler.toml
-name = "musictide"
-compatibility_date = "2024-01-01"
+To be configured manually in the Cloudflare Pages dashboard when creating the project:
 
-[env.production.vars]
-HUGO_VERSION = "0.158.0"
+| Setting | Value |
+|---------|-------|
+| Build command | `hugo --gc --minify` |
+| Build output directory | `public` |
+| Root directory | `/` |
+| Environment variable (Production) | `HUGO_VERSION = 0.158.0` |
 
-[pages_build_output_dir]
-value = "public"
-```
+## R2 Bucket Setup
 
-Build command: `hugo --gc --minify`
-Build output directory: `public`
-Root directory: `/` (repo root)
+1. Create bucket `musictide-media` in Cloudflare dashboard
+2. **Enable public access**: R2 → `musictide-media` → Settings → Allow Access → Enable
+3. Record the assigned `pub-<hash>.r2.dev` URL — this is the value for `mediaBaseURL`
+4. CORS policy: allow GET from `*.pages.dev` and any future custom domain
 
-## R2 Bucket
-
-- Bucket name: `musictide-media`
-- Public access: enabled (read-only, via R2 public URL)
-- CORS: allow GET from `*.pages.dev` and future custom domain
-- Structure: `/<year>/<event-slug>/filename.jpg` (convention, not enforced by this phase)
+Bucket structure convention (not enforced): `/<year>/<event-slug>/filename.jpg`
 
 ## Acceptance Criteria
 
 1. `git push origin main` triggers a Cloudflare Pages build automatically
 2. Build completes with zero errors in under 2 minutes
-3. `https://musictide.pages.dev/` serves the Blowfish home page
-4. `https://musictide.pages.dev/en/` serves the English version
-5. R2 bucket exists and a test image is publicly accessible via its R2 URL
-6. `mediaBaseURL` in `params.yaml` points at the R2 bucket
-7. Codeberg remote still works (`git push codeberg main` succeeds)
+3. `https://musictide.pages.dev/` serves the Portuguese (pt-PT) Blowfish home page; `/pt/` returns 404 (confirming `defaultContentLanguageInSubdir: false` is working)
+4. `https://musictide.pages.dev/en/` serves the English (en-GB) version
+5. R2 bucket exists, public access is enabled, and a test image is publicly accessible via `https://pub-<hash>.r2.dev/test.jpg`
+6. `mediaBaseURL` in `params.yaml` points at the correct R2 public URL
+7. Codeberg remote still works: `git push codeberg main` succeeds

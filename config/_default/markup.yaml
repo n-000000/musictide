@@ -1,0 +1,23 @@
+goldmark:
+  parser:
+    wrapStandAloneImageWithinParagraph: false
+    attribute:
+      block: true
+  renderer:
+    unsafe: true
+  extensions:
+    passthrough:
+      enable: true
+      delimiters:
+        block:
+          - ['\[', '\]']
+          - ['$$', '$$']
+        inline:
+          - ['\(', '\)']
+
+highlight:
+  noClasses: false
+
+tableOfContents:
+  startLevel: 2
+  endLevel: 4

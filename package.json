@@ -1,0 +1,10 @@
+{
+  "name": "musictide",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "watch": "hugo server",
+    "build": "hugo --gc --minify",
+    "update": "hugo mod get -u && hugo mod tidy"
+  }
+}

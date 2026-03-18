@@ -1,0 +1,9 @@
+locale: pt-PT
+languageName: Português
+weight: 1
+title: Musictide
+params:
+  isoCode: pt-PT
+  displayName: PT
+  rtl: false
+  dateFormat: "2 January 2006"

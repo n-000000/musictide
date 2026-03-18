@@ -1,0 +1,9 @@
+locale: en-GB
+languageName: English
+weight: 2
+title: Musictide
+params:
+  isoCode: en-GB
+  displayName: EN
+  rtl: false
+  dateFormat: "2 January 2006"

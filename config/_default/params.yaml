@@ -22,7 +22,7 @@ homepage:
 
 article:
   showDate: true
-  showAuthor: true
+  showAuthor: false
   showReadingTime: true
   showWordCount: false
   showTableOfContents: false

@@ -45,3 +45,4 @@ related:
       weight: 80
     - name: date
       weight: 10
+      pattern: "200601"   # match by year+month

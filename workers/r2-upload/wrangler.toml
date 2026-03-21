@@ -1,0 +1,11 @@
+name = "musictide-media-upload"
+main = "index.js"
+compatibility_date = "2025-01-01"
+
+[[r2_buckets]]
+binding = "R2"
+bucket_name = "musictide-media"
+
+[vars]
+PUBLIC_BASE_URL = "https://pub-576ea11202f543d0bf28d36ef63d18ff.r2.dev"
+ALLOWED_ORIGIN = "https://musictide.pages.dev"

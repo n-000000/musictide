@@ -4,8 +4,12 @@ backend:
   branch: main
   base_url: https://sveltia-cms-auth.leftfield.workers.dev
 
-media_library:
-  name: r2
+media_libraries:
+  cloudflare_r2:
+    access_key_id: 0bd0a95fb73f463fa74a8cfd52ae8ec6
+    bucket: musictide-media
+    account_id: 43220b81420989e7198287bd4559a701
+    public_url: https://pub-576ea11202f543d0bf28d36ef63d18ff.r2.dev
 
 locale: pt
 
@@ -69,8 +73,6 @@ collections:
           - label: Imagem
             name: src
             widget: image
-            media_library:
-              name: r2
           - label: Legenda
             name: caption
             widget: string
@@ -129,8 +131,6 @@ collections:
         name: creative_image
         widget: image
         required: false
-        media_library:
-          name: r2
         hint: "Preencha este campo OU o campo HTML abaixo, não ambos"
 
       - label: Criativo — HTML
@@ -167,8 +167,6 @@ collections:
         name: photo
         widget: image
         required: false
-        media_library:
-          name: r2
 
       - label: Bio
         name: body

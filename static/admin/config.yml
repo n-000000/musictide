@@ -1,0 +1,194 @@
+backend:
+  name: github
+  repo: n-000000/musictide
+  branch: main
+  base_url: https://sveltia-cms-auth.leftfield.workers.dev
+
+media_library:
+  name: r2
+
+locale: pt
+
+collections:
+
+  # ── ARTIGOS ──────────────────────────────────────────────────
+  - name: posts
+    label: Artigos
+    label_singular: Artigo
+    folder: content/posts
+    create: true
+    slug: "{{slug}}"
+    preview_path: "posts/{{slug}}"
+    fields:
+
+      - label: Título
+        name: title
+        widget: string
+
+      - label: Data
+        name: date
+        widget: datetime
+        date_format: DD-MM-YYYY
+        time_format: HH:mm
+        format: YYYY-MM-DDTHH:mm:ssZ
+        default: ""
+
+      - label: Slug
+        name: slug
+        widget: string
+        required: false
+        hint: "Deixe em branco para gerar automaticamente a partir do título"
+
+      - label: Etiquetas
+        name: tags
+        widget: list
+        required: false
+        hint: "Palavras-chave separadas por vírgula"
+
+      - label: Evento
+        name: event
+        widget: string
+        required: false
+        hint: "Nome exacto do evento para agrupar artigos — use sempre o mesmo formato (ex: Vagos Metal Fest 2025)"
+
+      - label: Autor
+        name: author
+        widget: string
+        required: false
+        hint: "Deixe em branco se for o autor principal"
+
+      - label: Texto
+        name: body
+        widget: markdown
+
+      - label: Galeria
+        name: gallery
+        widget: list
+        required: false
+        summary: "{{fields.caption}}"
+        fields:
+          - label: Imagem
+            name: src
+            widget: image
+            media_library:
+              name: r2
+          - label: Legenda
+            name: caption
+            widget: string
+            required: false
+
+      - label: Rascunho
+        name: draft
+        widget: boolean
+        default: true
+
+  # ── PUBLICIDADE ──────────────────────────────────────────────
+  - name: ads
+    label: Publicidade
+    label_singular: Anúncio
+    folder: content/ads
+    create: true
+    slug: "{{slug}}"
+    fields:
+
+      - label: Título Interno
+        name: title
+        widget: string
+        hint: "Nome interno — não visível no site"
+
+      - label: Data
+        name: date
+        widget: datetime
+        date_format: DD-MM-YYYY
+        time_format: HH:mm
+        format: YYYY-MM-DDTHH:mm:ssZ
+        default: ""
+
+      - label: Activo De
+        name: active_from
+        widget: datetime
+        date_format: DD-MM-YYYY
+        time_format: HH:mm
+        format: YYYY-MM-DDTHH:mm:ssZ
+        required: false
+        hint: "Data de início de exibição"
+
+      - label: Activo Até
+        name: active_until
+        widget: datetime
+        date_format: DD-MM-YYYY
+        time_format: HH:mm
+        format: YYYY-MM-DDTHH:mm:ssZ
+        required: false
+        hint: "Data de fim de exibição"
+
+      - label: URL de Destino
+        name: click_through_url
+        widget: string
+        pattern: ['^https?://', 'Deve ser uma URL válida (começar com http:// ou https://)']
+
+      - label: Criativo — Imagem
+        name: creative_image
+        widget: image
+        required: false
+        media_library:
+          name: r2
+        hint: "Preencha este campo OU o campo HTML abaixo, não ambos"
+
+      - label: Criativo — HTML
+        name: creative_html
+        widget: code
+        default_language: html
+        required: false
+        hint: "HTML auto-contido (sem scripts externos). Alternativa à imagem acima."
+
+      - label: Notas Internas
+        name: notes
+        widget: text
+        required: false
+
+      - label: Rascunho
+        name: draft
+        widget: boolean
+        default: true
+
+  # ── COLABORADORES ─────────────────────────────────────────────
+  - name: authors
+    label: Colaboradores
+    label_singular: Colaborador
+    folder: content/authors
+    create: true
+    slug: "{{slug}}"
+    fields:
+
+      - label: Nome
+        name: title
+        widget: string
+
+      - label: Foto
+        name: photo
+        widget: image
+        required: false
+        media_library:
+          name: r2
+
+      - label: Bio
+        name: body
+        widget: markdown
+        required: false
+
+      - label: Email
+        name: email
+        widget: string
+        required: false
+
+      - label: Instagram
+        name: instagram
+        widget: string
+        required: false
+        hint: "Só o handle, sem @ (ex: musictide_pt)"
+
+      - label: Rascunho
+        name: draft
+        widget: boolean
+        default: false

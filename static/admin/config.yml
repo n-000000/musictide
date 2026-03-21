@@ -31,7 +31,6 @@ collections:
         date_format: DD-MM-YYYY
         time_format: HH:mm
         format: YYYY-MM-DDTHH:mm:ssZ
-        default: ""
 
       - label: Slug
         name: slug
@@ -102,7 +101,6 @@ collections:
         date_format: DD-MM-YYYY
         time_format: HH:mm
         format: YYYY-MM-DDTHH:mm:ssZ
-        default: ""
 
       - label: Activo De
         name: active_from

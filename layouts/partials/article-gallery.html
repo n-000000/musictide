@@ -1,0 +1,22 @@
+{{- /*
+  article-gallery.html — renders the gallery frontmatter field.
+  Called from layouts/_default/single.html after .Content.
+
+  Expects .Params.gallery to be a list of image URLs.
+  Renders a responsive masonry-style grid using CSS columns.
+*/ -}}
+{{- with .Params.gallery -}}
+<div class="mt-10 mb-4">
+  <div style="columns: 2; column-gap: 0.5rem;" class="md:columns-3">
+    {{- range . -}}
+    <div style="break-inside: avoid; margin-bottom: 0.5rem;">
+      <a href="{{ . }}" target="_blank" rel="noopener">
+        <img src="{{ . }}" alt="" loading="lazy"
+          class="w-full rounded block"
+          style="display: block;">
+      </a>
+    </div>
+    {{- end -}}
+  </div>
+</div>
+{{- end -}}

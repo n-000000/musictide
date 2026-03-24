@@ -42,7 +42,7 @@ yarn mirror             # Push to Codeberg backup mirror (git push codeberg main
 
 ## Architecture
 
-**Stack:** Hugo 0.158.0 Extended + Blowfish v2 (Hugo module) + Cloudflare Pages + Cloudflare R2
+**Stack:** Hugo 0.158.0 Extended + Blowfish v2 (Hugo module) + Sveltia CMS + Cloudflare Pages + Cloudflare R2
 
 ### Hugo Module
 
@@ -51,15 +51,13 @@ config/_default/module.yaml:
 └── github.com/nunocoracao/blowfish/v2   # theme, layouts, shortcodes, partials
 ```
 
-No local `layouts/` overrides yet. Create them only when you need to override Blowfish behaviour.
-
 ### Configuration Split
 
 All config lives in `config/_default/` as YAML:
 
 | File | Purpose |
 |------|---------|
-| `hugo.yaml` | Core Hugo settings, baseURL, outputs, taxonomies |
+| `hugo.yaml` | Core Hugo settings, baseURL, outputs, taxonomies (incl. events) |
 | `module.yaml` | Hugo module imports |
 | `params.yaml` | Blowfish theme params + `mediaBaseURL` |
 | `markup.yaml` | Goldmark renderer + highlight config |
@@ -76,6 +74,7 @@ Environment overrides: `config/production/`, `config/staging/`, `config/developm
 - Secondary language: **en-GB**, served at `/en/`
 - Content uses **translation-by-filename**: `_index.md` = PT, `_index.en.md` = EN
 - `/pt/` returns 200 (Hugo generates aliases) — this is expected, not a bug
+- EN article translations are **not yet implemented** — only PT content exists currently
 
 ### Deployment Pipeline
 
@@ -102,6 +101,7 @@ No pipeline YAML file — Cloudflare Pages is configured entirely in the dashboa
 - **Hugo config:** `params.yaml` → `mediaBaseURL: https://pub-576ea11202f543d0bf28d36ef63d18ff.r2.dev`
 - Media lives in R2, NOT in git. Binary files do not belong in the repo.
 - R2 free tier: 10GB storage, no egress fees.
+- Uploads go through the R2 proxy Worker (see CMS section below), which adds `{collection}/YYYY/MM/DD/` prefixes.
 
 ### Git Remotes
 
@@ -112,49 +112,135 @@ codeberg  → ssh://git@codeberg.org/ngon/musictide.git (backup mirror, run yarn
 
 ---
 
-## Content Model
+## CMS (Sveltia)
 
-Planned collections (Sveltia CMS — not yet implemented):
+Sveltia CMS is the content management UI, served at `/admin/`. The photographer logs in via GitHub OAuth, creates/edits content, and Sveltia commits directly to GitHub — which triggers a Cloudflare Pages rebuild.
 
-| Collection | Storage | Purpose |
-|------------|---------|---------|
-| Articles | `content/posts/` | Photography-heavy event posts, bilingual |
-| Ads | `content/ads/` or `data/ads/` | Image or HTML ads with click-through metadata |
-| Staff | `content/authors/` | Contributor profiles (photo, bio, contact) |
+### Entry Point
 
-**Ads note:** Ads are paid placement (transactional, not per-click). JS interleaving into listing pages is a future phase — CMS just needs to create and store them for now.
+`static/admin/index.html` — loads Sveltia from CDN (pinned at `@sveltia/cms@0.149.1`). Also contains:
+- **R2 proxy fetch interceptor** — intercepts Sveltia's S3 API calls to R2, rewrites them to go through the proxy Worker instead. Strips AWS Signature V4 auth, injects GitHub Bearer token from the CMS session, passes `X-Collection` header.
+- **Dummy R2 credential pre-seeding** — Sveltia prompts for an R2 secret key per session. Since the fetch interceptor handles auth via GitHub OAuth, the actual R2 key is irrelevant. A dummy value is pre-seeded in `localStorage` to suppress the prompt.
+- **preSave hashtag extraction** — extracts `#hashtags` from article body text into the `tags` array on every save. Body is the source of truth (tags replaced, not merged). The `#` prefix is stripped from rendered output by client-side JS in `extend-footer.html`.
+- **Stock photo CSS hack** — hides Picsum/Unsplash buttons in the media picker via CSS (`display: none !important`). Sveltia has no config option to disable them.
+
+### CMS Config
+
+`static/admin/config.yml` — defines backend, media library, and all collections.
+
+### Auth
+
+`sveltia-cms-auth` Worker at `https://sveltia-cms-auth.leftfield.workers.dev` — GitHub OAuth proxy. This is the official Sveltia-recommended approach for non-Netlify deployments. The GitHub OAuth App callback points here.
+
+### R2 Proxy Worker
+
+`workers/r2-proxy/` — S3-compatible reverse proxy between Sveltia and R2. Deployed at `https://musictide-media-proxy.leftfield.workers.dev`.
+
+What it does:
+- **PutObject** — prepends `{collection}/YYYY/MM/DD/` to the key (based on current date)
+- **ListObjectsV2** — returns objects from ±1 day only, scoped to the current collection
+- **DeleteObject / HeadObject** — pass through
+- **Auth** — verifies the GitHub OAuth token has push access to `n-000000/musictide` (no static secrets)
+- **Daily cron (03:00 UTC)** — deletes orphaned R2 objects not referenced in any content markdown file. Fetches the full repo tree from GitHub's public API and cross-references R2 keys.
+
+### Known Sveltia Limitations
+
+These are confirmed limitations that cannot be fixed from our side:
+- `registerMediaLibrary()` is NOT supported — hence the fetch interceptor approach
+- `locale` config option is NOT supported — UI follows browser locale; Portuguese unavailable
+- Rich text editor outputs Markdown only — no HTML mode, no tables, no image float/resize
+- Stock photo integration cannot be disabled (CSS hack hides it)
+- `widget: hidden` doesn't properly hide list/array fields
+- Media list is cached per session — uploads via one image field don't appear in another field's picker until page reload
+- `date_format` only affects stored format, not UI display
+- R2 `prefix` is static — no dynamic per-article or date-based prefixes (hence the proxy Worker)
+- Collection-level `media_folder`/`public_folder` with placeholders do NOT work with R2 external media
 
 ---
 
-## Pending Work
+## Content Model
 
-### Next up: Sveltia CMS Integration
+Five CMS collections, all live and operational:
 
-Brainstorming in progress. See `docs/superpowers/specs/2026-03-20-sveltia-cms-brainstorm-context.md` for full context. Resume from there — do NOT start fresh.
+| Collection | CMS name | Storage | Purpose |
+|------------|----------|---------|---------|
+| Articles | `posts` | `content/posts/` | Photography-heavy event posts. Fields: event (relation), title, date, featureimage, author, body (text widget), gallery (multi-image), draft |
+| Ads | `ads` | `content/ads/` | Paid placement ads. Fields: title, creative_image, click_through_url, active_from/until, notes, draft |
+| Events | `events` | `content/events/` | Lookup collection for the article event relation picker. Fields: title only |
+| Contributors | `authors` | `content/authors/` | Contributor profiles. Fields: title, photo, bio, email, instagram, draft |
+| Site Style | `settings` | `data/style.yaml` | File collection (single file). Palette + font selection |
 
-**Decided:**
-- Auth via Cloudflare Pages GitHub OAuth proxy
-- Media uploads via Cloudflare Worker + R2 pre-signed URLs (browser → R2 directly, Worker just generates the URL)
-- Sveltia served at `/admin/` from CDN
-- Collections: articles, ads, staff
+**Body field** uses `widget: text` (plain text), not `widget: markdown`. Simpler for the photographer.
 
-**Not yet decided:** exact content schema fields, bilingual authoring workflow.
+**Tags** are not a CMS field — they are extracted automatically from `#hashtags` in the body text by the preSave hook.
 
-### Future phases (not started)
+**Ads note:** Ads are paid placement (transactional, not per-click). JS interleaving into listing pages is a future phase — CMS just creates and stores them.
 
-- Ads interleaving via client-side JS (insert ads at regular intervals in listing pages)
-- Custom domain
-- Codeberg Pages or GitHub Actions CI mirror automation
-- Video hosting strategy
+---
+
+## Local Layout Overrides
+
+These files override Blowfish defaults:
+
+| File | Purpose |
+|------|---------|
+| `layouts/_default/single.html` | Article template — injects gallery partial below body, uses `hugo.Data` (not deprecated `site.Data`). `max-w-prose` removed from header, content div, and footer so all elements span the full content column width. |
+| `layouts/partials/article-gallery.html` | Renders `gallery` frontmatter as responsive CSS columns grid (1 col mobile, 2 col ≥640px, 3 col ≥1024px). No `<a>` wrapper — Blowfish's Tobii zoom handles clicks |
+| `layouts/partials/extend-head.html` | Palette CSS custom properties (reads `data/style.yaml`), gallery CSS media queries |
+| `layouts/partials/extend-footer.html` | Client-side JS that strips `#` from hashtags in rendered article content |
+
+---
+
+## Styling System
+
+`data/style.yaml` stores the active palette and font choices. `extend-head.html` reads it and outputs CSS custom properties that override Blowfish's defaults for both light and dark mode.
+
+**5 palettes:** dark-metal, goth, punk, indie, minimal
+
+**Font options (headings):** system, bebas-neue, oswald, playfair, inter, roboto-slab
+**Font options (body):** system, inter, roboto-slab, playfair
+
+Switchable via CMS at Definições → Estilo Visual. Currently set to `indie` palette with system fonts.
+
+---
+
+## Mock Content
+
+9 mock articles exist in `content/posts/` using Picsum placeholder images: moonspell-vagos, gojira-sonicblast, deftones-voa, pixies-colorama, sepultura-vagos, massive-attack-sonar, baroness-sonicblast, health-sumol, blindzero-voa. Plus `fu-manchu` and `slayer` created via CMS during testing.
+
+These are placeholder content for development. Remove before going live with real content.
 
 ---
 
 ## Known Quirks
 
-- **Blowfish version warning:** `WARN Module "github.com/nunocoracao/blowfish/v2" is not compatible with this Hugo version: 0.141.0/0.157.0 extended` — Blowfish v2.100.0 declares max Hugo 0.157.0 but we run 0.158.0. This is a soft warning, builds succeed. Ignore it.
-- **`public/` directory:** Exists locally from local builds. It is gitignored. Do not commit it.
-- **`static/` and `layouts/` are empty** — this is correct. Don't add files there unless specifically needed.
+- **Blowfish version warning:** `WARN Module "github.com/nunocoracao/blowfish/v2" is not compatible with this Hugo version` — Blowfish v2 declares max Hugo 0.157.0 but we run 0.158.0. Soft warning, builds succeed. Ignore it.
+- **`public/` directory:** Exists locally from local builds. Gitignored. Do not commit it.
 - **`.worktrees/` is gitignored** — worktrees live at `.worktrees/<branch-name>`.
+- **Sveltia media cache bug:** Media list is fetched once per session. Uploading via one image field then opening another field's picker won't show the new file until page reload.
+- **`/pt/` returns 200** — Hugo generates aliases. This is expected, not a bug.
+
+---
+
+## Pending Work
+
+### Not yet implemented
+
+- **Bilingual authoring workflow** — EN translations for articles. Translation-by-filename is set up but no EN content exists yet. Sveltia i18n per-field config not yet added.
+- **Ads display** — Client-side JS to interleave active ads into article listing pages.
+- **Events taxonomy templates** — `content/events/` exists as a CMS lookup collection but has no custom Hugo taxonomy templates (no banner/description display on event pages).
+- **Custom domain** — still on `musictide.pages.dev`.
+- **Video hosting strategy** — not started.
+
+### Cleanup
+
+- **`workers/r2-upload/`** — the original R2 upload Worker. Redundant since the R2 proxy Worker (`workers/r2-proxy/`) replaced it. Can be removed from the repo and undeployed.
+- **Mock content** — 11 test articles to remove before launch.
+
+### Future consideration
+
+- **Block-based content model** — Evaluated on 2026-03-22 as "Path B" (see `docs/superpowers/specs/2026-03-22-cms-assessment-and-paths-forward.md`). Would replace the single body text field with a list of typed blocks (text, image, gallery) giving the photographer layout control. Not implemented — current approach (body text + separate gallery field) was chosen for simplicity. Revisit if photographer needs more editorial control.
+- **CMS replacement** — Tina CMS (keeps Hugo, better editor) or Nuxt + Nuxt Studio (full rebuild, best editor UX) were evaluated and deferred. See same assessment doc.
 
 ---
 
@@ -167,3 +253,42 @@ hugo 2>&1
 ```
 
 Expected: zero `ERROR` lines. `WARN` about Blowfish version is acceptable.
+
+---
+
+## Project History
+
+Condensed timeline of key milestones:
+
+| Date | Milestone |
+|------|-----------|
+| 2026-03-18 | Project bootstrap: Hugo scaffold, Blowfish v2 module, bilingual config, YAML split config, package.json. Cloudflare deployment spec written. |
+| 2026-03-19 | Cloudflare Pages + R2 deployed. Primary remote moved from Codeberg to GitHub. `musictide.pages.dev` live. R2 bucket `musictide-media` with public access. Codeberg kept as manual mirror. |
+| 2026-03-20 | Sveltia CMS integration begins. Auth Worker deployed (`sveltia-cms-auth`). R2 upload Worker created. Admin UI at `/admin/`. Collections: posts, ads, authors. Events taxonomy added. |
+| 2026-03-21 | E2E testing. Native R2 integration discovered (replaced custom media plugin). Multiple Sveltia limitations found. Original `r2-upload` Worker becomes redundant. |
+| 2026-03-22 | CMS assessment: 11 issues documented, three paths forward evaluated (A: accept markdown, B: block-based content, C: replace Sveltia). Quick fixes applied (cover image, date defaults, multi-image gallery, event relation widget). |
+| 2026-03-23 | R2 proxy Worker built (`workers/r2-proxy/`). Fetch interceptor in `index.html`. Date-based upload prefixes. GitHub OAuth auth on uploads. Daily orphan cleanup cron. |
+| 2026-03-24 | Styling system (5 palettes, fonts, CSS custom properties via `data/style.yaml`). Homepage article grid. Article gallery partial. Hashtag extraction preSave hook. Mock articles. Body field changed to text widget. All committed and pushed. |
+
+Design docs live in `docs/superpowers/specs/` and `docs/superpowers/plans/` — useful for understanding rationale behind decisions but may be outdated relative to current code.
+
+---
+
+## Credentials Reference
+
+Non-secret identifiers needed for operations:
+
+| What | Value |
+|------|-------|
+| Cloudflare Account ID | `43220b81420989e7198287bd4559a701` |
+| Cloudflare Workers subdomain | `leftfield` |
+| R2 Access Key ID | `0bd0a95fb73f463fa74a8cfd52ae8ec6` |
+| R2 Public URL | `https://pub-576ea11202f543d0bf28d36ef63d18ff.r2.dev` |
+| GitHub OAuth App Client ID | `Ov23liqMUtOJYdVl58nr` |
+| Auth Worker URL | `https://sveltia-cms-auth.leftfield.workers.dev` |
+| R2 Proxy Worker URL | `https://musictide-media-proxy.leftfield.workers.dev` |
+| R2 Upload Worker URL (redundant) | `https://musictide-media-upload.leftfield.workers.dev` |
+| GitHub repo | `n-000000/musictide` (public) |
+| Cloudflare Pages URL | `https://musictide.pages.dev` |
+
+Secrets (R2 Secret Access Key, GitHub OAuth Client Secret) are in the developer's password manager and/or Cloudflare Worker secrets. Never committed to the repo.

@@ -101,31 +101,21 @@
 
     <script>
       // ── Hashtag Extraction ───────────────────────────────────────
-      // Extract #hashtags from body text into tags field on save.
-      // Photographer writes: "Concerto incrível #metal #rock #vagos"
-      // Result: body has hashtags stripped, tags = ["metal", "rock", "vagos"]
+      // Extract #hashtags from body text into the tags field on save.
+      // Body is the source of truth — hashtags stay in the text, tags
+      // are always recomputed (replaced, not merged) from the body.
+      // The "#" is hidden from readers by client-side JS (extend-footer.html).
       CMS.registerEventListener({
         name: 'preSave',
         handler: ({ entry }) => {
           const body = entry.get('data').get('body');
           if (typeof body !== 'string') return entry.get('data');
 
-          // Match #hashtags (Unicode-aware for Portuguese accents)
           const hashtagPattern = /#([\p{L}\p{N}_-]+)/gu;
           const matches = [...body.matchAll(hashtagPattern)];
-          const extracted = matches.map(m => m[1].toLowerCase());
+          const tags = [...new Set(matches.map(m => m[1].toLowerCase()))];
 
-          // Merge with any existing tags
-          const existing = entry.get('data').get('tags');
-          const existingArr = existing ? existing.toJS() : [];
-          const allTags = [...new Set([...existingArr, ...extracted])];
-
-          // Strip hashtags from body text
-          const cleanBody = body.replace(hashtagPattern, '').replace(/  +/g, ' ').trim();
-
-          return entry.get('data')
-            .set('body', cleanBody)
-            .set('tags', allTags);
+          return entry.get('data').set('tags', tags);
         },
       });
     </script>

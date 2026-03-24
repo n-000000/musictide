@@ -1,0 +1,34 @@
+{{- /*
+  extend-footer.html — Blowfish hook, injected before </body>.
+
+  Strips "#" from #hashtags in article content for readers.
+  The hashtags remain in the markdown source (source of truth for tags).
+*/ -}}
+<script>
+(function () {
+  var container = document.querySelector('.article-content');
+  if (!container) return;
+
+  var pattern = /#([\p{L}\p{N}_\-]+)/gu;
+  var walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT);
+  var nodes = [];
+  while (walker.nextNode()) nodes.push(walker.currentNode);
+
+  nodes.forEach(function (node) {
+    if (!pattern.test(node.textContent)) return;
+    pattern.lastIndex = 0;
+
+    var frag = document.createDocumentFragment();
+    var parts = node.textContent.split(/(#[\p{L}\p{N}_\-]+)/gu);
+    parts.forEach(function (part) {
+      var m = part.match(/^#([\p{L}\p{N}_\-]+)$/u);
+      if (m) {
+        frag.appendChild(document.createTextNode(m[1]));
+      } else {
+        frag.appendChild(document.createTextNode(part));
+      }
+    });
+    node.parentNode.replaceChild(frag, node);
+  });
+})();
+</script>

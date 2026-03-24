@@ -17,8 +17,12 @@ footer:
   showScrollToTop: true
 
 homepage:
-  layout: profile
-  showRecent: false
+  layout: page
+  showRecent: true
+  showRecentItems: 9
+  cardView: true
+  showMoreLink: true
+  showMoreLinkDest: /posts/
 
 article:
   showDate: true

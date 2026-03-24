@@ -1,0 +1,20 @@
+name = "musictide-media-proxy"
+main = "src/index.js"
+compatibility_date = "2025-01-01"
+
+[[r2_buckets]]
+binding = "R2"
+bucket_name = "musictide-media"
+
+[vars]
+BUCKET_NAME = "musictide-media"
+PUBLIC_URL = "https://pub-576ea11202f543d0bf28d36ef63d18ff.r2.dev"
+
+# Auth: GitHub OAuth token forwarded from CMS browser session.
+# Worker verifies push access to n-000000/musictide via GitHub API.
+# No secrets needed for CMS operations — auth piggybacks on existing GitHub OAuth.
+
+# Scheduled cleanup: delete orphaned R2 files not referenced in content.
+# Repo is public — no GitHub token needed.
+[triggers]
+crons = ["0 3 * * *"]  # daily at 03:00 UTC

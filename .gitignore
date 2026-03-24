@@ -1,6 +1,12 @@
 # Worktrees
 .worktrees/
 
+# Playwright MCP debug output
+.playwright-mcp/
+
+# Hugo module vendor (fetched at build time)
+_vendor/
+
 # ---> Hugo
 # Generated files by hugo
 /public/

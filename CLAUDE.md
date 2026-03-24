@@ -17,6 +17,12 @@ This file provides guidance to Claude Code when working in this repository.
 ## Commands
 
 ```bash
+# Wrangler (Cloudflare Workers CLI)
+# NOT globally installed — always use npx:
+npx wrangler deploy
+npx wrangler secret put SECRET_NAME --name worker-name
+npx wrangler secret list --name worker-name
+
 # Development
 yarn watch              # Hugo dev server (hot reload) at http://localhost:1313
 

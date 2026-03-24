@@ -4,14 +4,14 @@ backend:
   branch: main
   base_url: https://sveltia-cms-auth.leftfield.workers.dev
 
+site_url: https://musictide.pages.dev
+
 media_libraries:
   cloudflare_r2:
     access_key_id: 0bd0a95fb73f463fa74a8cfd52ae8ec6
     bucket: musictide-media
     account_id: 43220b81420989e7198287bd4559a701
     public_url: https://pub-576ea11202f543d0bf28d36ef63d18ff.r2.dev
-
-locale: pt
 
 collections:
 
@@ -21,9 +21,19 @@ collections:
     label_singular: Artigo
     folder: content/posts
     create: true
-    slug: "{{slug}}"
     preview_path: "posts/{{slug}}"
     fields:
+
+      - label: Evento
+        name: event
+        widget: relation
+        collection: events
+        search_fields: [title]
+        value_field: title
+        display_fields: [title]
+        dropdown_threshold: 0
+        required: false
+        hint: "Escolha o evento — pesquise pelo nome"
 
       - label: Título
         name: title
@@ -32,27 +42,22 @@ collections:
       - label: Data
         name: date
         widget: datetime
-        date_format: DD-MM-YYYY
+        date_format: YYYY/MM/DD
         time_format: HH:mm
         format: YYYY-MM-DDTHH:mm:ssZ
+        default: "{{now}}"
 
-      - label: Slug
-        name: slug
+      - label: Imagem de Capa
+        name: featureimage
+        widget: image
+        required: false
+        hint: "Imagem principal do artigo (hero/capa)"
+
+      - label: Legenda da Capa
+        name: featureimagecaption
         widget: string
         required: false
-        hint: "Deixe em branco para gerar automaticamente a partir do título"
-
-      - label: Etiquetas
-        name: tags
-        widget: list
-        required: false
-        hint: "Palavras-chave separadas por vírgula"
-
-      - label: Evento
-        name: event
-        widget: string
-        required: false
-        hint: "Nome exacto do evento para agrupar artigos — use sempre o mesmo formato (ex: Vagos Metal Fest 2025)"
+        hint: "Legenda da imagem de capa"
 
       - label: Autor
         name: author
@@ -62,21 +67,15 @@ collections:
 
       - label: Texto
         name: body
-        widget: markdown
+        widget: text
+        hint: "Use #palavrachave no texto para marcar tags (ex: concerto #metal #rock). As tags são extraídas ao gravar."
 
       - label: Galeria
         name: gallery
-        widget: list
+        widget: image
+        multiple: true
         required: false
-        summary: "{{fields.caption}}"
-        fields:
-          - label: Imagem
-            name: src
-            widget: image
-          - label: Legenda
-            name: caption
-            widget: string
-            required: false
+        hint: "Seleccione várias imagens de uma vez"
 
       - label: Rascunho
         name: draft
@@ -89,7 +88,6 @@ collections:
     label_singular: Anúncio
     folder: content/ads
     create: true
-    slug: "{{slug}}"
     fields:
 
       - label: Título Interno
@@ -97,17 +95,20 @@ collections:
         widget: string
         hint: "Nome interno — não visível no site"
 
-      - label: Data
-        name: date
-        widget: datetime
-        date_format: DD-MM-YYYY
-        time_format: HH:mm
-        format: YYYY-MM-DDTHH:mm:ssZ
+      - label: Imagem
+        name: creative_image
+        widget: image
+        hint: "Imagem do anúncio"
+
+      - label: URL de Destino
+        name: click_through_url
+        widget: string
+        pattern: ['^https?://', 'Deve ser uma URL válida (começar com http:// ou https://)']
 
       - label: Activo De
         name: active_from
         widget: datetime
-        date_format: DD-MM-YYYY
+        date_format: YYYY/MM/DD
         time_format: HH:mm
         format: YYYY-MM-DDTHH:mm:ssZ
         required: false
@@ -116,29 +117,11 @@ collections:
       - label: Activo Até
         name: active_until
         widget: datetime
-        date_format: DD-MM-YYYY
+        date_format: YYYY/MM/DD
         time_format: HH:mm
         format: YYYY-MM-DDTHH:mm:ssZ
         required: false
         hint: "Data de fim de exibição"
-
-      - label: URL de Destino
-        name: click_through_url
-        widget: string
-        pattern: ['^https?://', 'Deve ser uma URL válida (começar com http:// ou https://)']
-
-      - label: Criativo — Imagem
-        name: creative_image
-        widget: image
-        required: false
-        hint: "Preencha este campo OU o campo HTML abaixo, não ambos"
-
-      - label: Criativo — HTML
-        name: creative_html
-        widget: code
-        default_language: html
-        required: false
-        hint: "HTML auto-contido (sem scripts externos). Alternativa à imagem acima."
 
       - label: Notas Internas
         name: notes
@@ -150,13 +133,26 @@ collections:
         widget: boolean
         default: true
 
+  # ── EVENTOS ──────────────────────────────────────────────────
+  - name: events
+    label: Eventos
+    label_singular: Evento
+    folder: content/events
+    create: true
+    identifier_field: title
+    fields:
+
+      - label: Nome
+        name: title
+        widget: string
+        hint: "Ex: Vagos Metal Fest 2025, SonicBlast 2099"
+
   # ── COLABORADORES ─────────────────────────────────────────────
   - name: authors
     label: Colaboradores
     label_singular: Colaborador
     folder: content/authors
     create: true
-    slug: "{{slug}}"
     fields:
 
       - label: Nome
@@ -170,7 +166,7 @@ collections:
 
       - label: Bio
         name: body
-        widget: markdown
+        widget: text
         required: false
 
       - label: Email
@@ -188,3 +184,49 @@ collections:
         name: draft
         widget: boolean
         default: false
+
+  # ── ESTILO DO SITE ────────────────────────────────────────────
+  - name: settings
+    label: Definições
+    files:
+
+      - label: Estilo Visual
+        name: style
+        file: data/style.yaml
+        fields:
+
+          - label: Paleta de Cores
+            name: palette
+            widget: select
+            options:
+              - { label: "Dark Metal (fundo preto, vermelho)", value: dark-metal }
+              - { label: "Goth (roxo escuro, violeta)", value: goth }
+              - { label: "Punk (fundo claro, vermelho vivo)", value: punk }
+              - { label: "Indie (azul escuro, rosa/coral)", value: indie }
+              - { label: "Minimal (branco, preto)", value: minimal }
+            default: dark-metal
+            hint: "Esquema de cores do site"
+
+          - label: Tipo de Letra — Títulos
+            name: heading_font
+            widget: select
+            options:
+              - { label: "Sistema (padrão)", value: system }
+              - { label: "Bebas Neue (impacto, metal)", value: bebas-neue }
+              - { label: "Oswald (condensado, editorial)", value: oswald }
+              - { label: "Playfair Display (elegante, serifado)", value: playfair }
+              - { label: "Inter (moderno, neutro)", value: inter }
+              - { label: "Roboto Slab (sólido, serifado)", value: roboto-slab }
+            default: system
+            hint: "Tipo de letra para títulos e cabeçalhos"
+
+          - label: Tipo de Letra — Texto
+            name: body_font
+            widget: select
+            options:
+              - { label: "Sistema (padrão)", value: system }
+              - { label: "Inter (moderno, neutro)", value: inter }
+              - { label: "Roboto Slab (sólido, serifado)", value: roboto-slab }
+              - { label: "Playfair Display (elegante, serifado)", value: playfair }
+            default: system
+            hint: "Tipo de letra para o corpo do texto"

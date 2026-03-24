@@ -4,8 +4,131 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Musictide CMS</title>
+
+    <!-- Hide stock photo integrations — no config option exists in Sveltia -->
+    <style>
+      /* Hide the "Stock Photos" option group in media picker */
+      button[data-name="picsum"],
+      button[data-name="unsplash"] {
+        display: none !important;
+      }
+      /* Hide the parent group when all children are hidden */
+      .option-group:has(> .inner > .option > button[data-name="picsum"]) {
+        display: none !important;
+      }
+    </style>
+
+    <script>
+      // ── Pre-seed R2 credentials ────────────────────────────────────
+      // Sveltia prompts for the R2 secret key on each new browser session.
+      // Since our fetch interceptor strips AWS auth and uses GitHub OAuth
+      // instead, the actual value is irrelevant — we just need to suppress
+      // the prompt. Pre-seed a dummy value in Sveltia's prefs storage.
+      (function () {
+        try {
+          const prefs = JSON.parse(localStorage.getItem('sveltia-cms.prefs') || '{}');
+          if (!prefs.apiKeys || !prefs.apiKeys.cloudflare_r2) {
+            prefs.apiKeys = prefs.apiKeys || {};
+            prefs.apiKeys.cloudflare_r2 = 'dummy-intercepted-by-proxy';
+            localStorage.setItem('sveltia-cms.prefs', JSON.stringify(prefs));
+          }
+        } catch (e) { /* ignore — worst case user gets the prompt as before */ }
+      })();
+    </script>
+
+    <script>
+      // ── R2 Proxy Interceptor ─────────────────────────────────────
+      // Redirects Sveltia's S3 API calls from R2 to our proxy Worker.
+      // The Worker adds date-based prefixes and verifies GitHub auth.
+      // No secrets in this file — auth piggybacks on GitHub OAuth.
+      (function () {
+        const R2_HOST = '43220b81420989e7198287bd4559a701.r2.cloudflarestorage.com';
+        // TODO: enable after deploying Worker: npx wrangler deploy (from workers/r2-proxy/)
+        const PROXY_ENABLED = true;
+        const PROXY_HOST = 'musictide-media-proxy.leftfield.workers.dev';
+
+        // Try known localStorage keys where Sveltia/Netlify CMS stores the GitHub token.
+        function getGitHubToken() {
+          const keys = ['sveltia-cms.user', 'sveltia-cms.auth', 'netlify-cms-user', 'decap-cms-user'];
+          for (const key of keys) {
+            try {
+              const raw = localStorage.getItem(key);
+              if (raw) {
+                const parsed = JSON.parse(raw);
+                if (parsed.token) return parsed.token;
+              }
+            } catch (e) { /* ignore parse errors */ }
+          }
+          return '';
+        }
+
+        // Detect current collection from Sveltia's hash route.
+        // e.g. #/collections/ads/entries/... → "ads", #/collections/posts/... → "posts"
+        function getCurrentCollection() {
+          const match = window.location.hash.match(/#\/collections\/([^/]+)/);
+          return match ? match[1] : 'posts';
+        }
+
+        const _fetch = window.fetch;
+        window.fetch = function (input, init) {
+          let url = typeof input === 'string' ? input : input instanceof Request ? input.url : String(input);
+
+          if (PROXY_ENABLED && url.includes(R2_HOST)) {
+            const newUrl = url.replace(R2_HOST, PROXY_HOST);
+            const newInit = Object.assign({}, init || {});
+            const headers = new Headers(newInit.headers || {});
+
+            // Strip AWS Signature V4 auth, add GitHub token
+            headers.delete('authorization');
+            headers.delete('x-amz-date');
+            headers.delete('x-amz-content-sha256');
+            headers.set('Authorization', 'Bearer ' + getGitHubToken());
+
+            // Tell the Worker which collection we're in
+            headers.set('X-Collection', getCurrentCollection());
+
+            newInit.headers = headers;
+            return _fetch.call(window, newUrl, newInit);
+          }
+
+          return _fetch.apply(window, arguments);
+        };
+      })();
+    </script>
+
     <!-- Pin version — do not use @latest. Check https://github.com/sveltia/sveltia-cms/releases for updates. -->
-    <script src="https://unpkg.com/@sveltia/cms@0.148.0/dist/sveltia-cms.js"></script>
+    <script src="https://unpkg.com/@sveltia/cms@0.149.1/dist/sveltia-cms.js"></script>
+
+    <script>
+      // ── Hashtag Extraction ───────────────────────────────────────
+      // Extract #hashtags from body text into tags field on save.
+      // Photographer writes: "Concerto incrível #metal #rock #vagos"
+      // Result: body has hashtags stripped, tags = ["metal", "rock", "vagos"]
+      CMS.registerEventListener({
+        name: 'preSave',
+        handler: ({ entry }) => {
+          const body = entry.get('data').get('body');
+          if (typeof body !== 'string') return entry.get('data');
+
+          // Match #hashtags (Unicode-aware for Portuguese accents)
+          const hashtagPattern = /#([\p{L}\p{N}_-]+)/gu;
+          const matches = [...body.matchAll(hashtagPattern)];
+          const extracted = matches.map(m => m[1].toLowerCase());
+
+          // Merge with any existing tags
+          const existing = entry.get('data').get('tags');
+          const existingArr = existing ? existing.toJS() : [];
+          const allTags = [...new Set([...existingArr, ...extracted])];
+
+          // Strip hashtags from body text
+          const cleanBody = body.replace(hashtagPattern, '').replace(/  +/g, ' ').trim();
+
+          return entry.get('data')
+            .set('body', cleanBody)
+            .set('tags', allTags);
+        },
+      });
+    </script>
   </head>
   <body>
   </body>

@@ -271,6 +271,22 @@
 {{- end }}
 
 <style>
+  /* ── Article gallery ────────────────────────────────────────── */
+  .mt-gallery {
+    columns: 1;
+    column-gap: 0.5rem;
+  }
+  @media (min-width: 640px) {
+    .mt-gallery { columns: 2; }
+  }
+  @media (min-width: 1024px) {
+    .mt-gallery { columns: 3; }
+  }
+  .mt-gallery > div {
+    break-inside: avoid;
+    margin-bottom: 0.5rem;
+  }
+
   /* ── Light mode ─────────────────────────────────────────────── */
   html:not(.dark) {
     --color-neutral:     {{ index $light "neutral-50" }};

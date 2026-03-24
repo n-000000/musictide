@@ -7,12 +7,10 @@
 */ -}}
 {{- with .Params.gallery -}}
 <div class="mt-10 mb-4">
-  <div style="columns: 2; column-gap: 0.5rem;" class="md:columns-3">
+  <div class="mt-gallery">
     {{- range . -}}
-    <div style="break-inside: avoid; margin-bottom: 0.5rem;">
-      <img src="{{ . }}" alt="" loading="lazy"
-        class="w-full rounded block"
-        style="display: block;">
+    <div>
+      <img src="{{ . }}" alt="" loading="lazy" class="w-full rounded">
     </div>
     {{- end -}}
   </div>

@@ -10,11 +10,9 @@
   <div style="columns: 2; column-gap: 0.5rem;" class="md:columns-3">
     {{- range . -}}
     <div style="break-inside: avoid; margin-bottom: 0.5rem;">
-      <a href="{{ . }}" target="_blank" rel="noopener">
-        <img src="{{ . }}" alt="" loading="lazy"
-          class="w-full rounded block"
-          style="display: block;">
-      </a>
+      <img src="{{ . }}" alt="" loading="lazy"
+        class="w-full rounded block"
+        style="display: block;">
     </div>
     {{- end -}}
   </div>

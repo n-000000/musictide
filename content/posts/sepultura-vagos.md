@@ -19,10 +19,6 @@ tags:
 
 Derrick Green comanda o palco com uma autoridade que silencia qualquer discussão sobre o legado da banda. 
 
-A versão de "Territory" foi devastadora — Andreas Kisser a solo com a precisão e ferocidade que definem três décadas de carreira. 
-
-O pit não parou. 
-
-O pit nunca para quando os Sepultura tocam em Portugal. 
+A versão de "Territory" foi devastadora — Andreas Kisser a solo com a precisão e ferocidade que definem três décadas de carreira. O pit não parou. O pit nunca para quando os Sepultura tocam em Portugal. 
 
 #sepultura #thrash #metal #vagos

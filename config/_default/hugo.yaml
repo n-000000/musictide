@@ -3,7 +3,6 @@ defaultContentLanguage: pt
 defaultContentLanguageInSubdir: false
 enableRobotsTXT: true
 enableEmoji: true
-summaryLength: 12
 
 module:
   hugoVersion:

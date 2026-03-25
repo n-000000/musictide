@@ -39,3 +39,4 @@ list:
   showCards: true
   showTableOfContents: false
   showSummary: true
+  summaryLength: 0

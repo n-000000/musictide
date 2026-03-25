@@ -17,8 +17,8 @@ tags:
   - colorama
 ---
 
-Black Francis não faz cerimónia.
+Black Francis não faz cerimónia. Três acordes, um grito, e já está — a multidão do Colorama rende-se completamente. 
 
-Três acordes, um grito, e já está — a multidão do Colorama rende-se completamente. "Debaser" a abrir foi uma declaração de intenções brutalmente eficaz. Kim Deal não está, mas a banda não parece ressentir a ausência. Joey Santiago continua a ser o guitarrista mais subestimado do rock alternativo. 
+"Debaser" a abrir foi uma declaração de intenções brutalmente eficaz. Kim Deal não está, mas a banda não parece ressentir a ausência. Joey Santiago continua a ser o guitarrista mais subestimado do rock alternativo. 
 
 #pixies #indie #alternativerock #colorama

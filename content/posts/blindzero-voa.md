@@ -18,9 +18,7 @@ tags:
   - alternativerock
 ---
 
-Os Blind Zero merecem um palco maior. Ponto final. 
-
-Há uma razão pela qual esta banda de Lisboa continua a crescer depois de trinta anos — a música não envelhece porque nunca esteve amarrada a uma época específica. 
+Os Blind Zero merecem um palco maior. Ponto final.  Há uma razão pela qual esta banda de Lisboa continua a crescer depois de trinta anos — a música não envelhece porque nunca esteve amarrada a uma época específica. 
 
 O shoegaze deles tem uma qualidade atemporal que faz com que "Azul" soe tão fresco hoje como quando saiu. 
 

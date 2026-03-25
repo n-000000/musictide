@@ -7,7 +7,7 @@ enableSearch: true
 enableCodeCopy: false
 
 header:
-  layout: basic
+  layout: fixed
 
 footer:
   showMenu: false

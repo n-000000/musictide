@@ -19,8 +19,6 @@ tags:
 
 O som dos HEALTH é uma agressão bem-vinda — ondas de sintetizadores e bateria programada que envolvem o corpo antes de o esmagar. 
 
-No Sumol Summer Fest a brisa do oceano em segundo plano tornava tudo mais surreal. 
-
-Jake Duzsik canta como se estivesse a transmitir sinais de outro planeta. 
+No Sumol Summer Fest a brisa do oceano em segundo plano tornava tudo mais surreal. Jake Duzsik canta como se estivesse a transmitir sinais de outro planeta. 
 
 #health #industrial #noise #sumol #electronica

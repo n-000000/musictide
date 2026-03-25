@@ -1,5 +1,5 @@
-colorScheme: dark-metal
+colorScheme: slate
 heading_font: bebas-neue
 body_font: playfair
-homepage_layout: page
-homepage_image: ""
+homepage_layout: hero
+homepage_image: ''

@@ -19,9 +19,7 @@ tags:
 
 Se há banda que justifica sozinha uma viagem até Moledo, é os Gojira. 
 
-O set abre com "Amazonia" e o público colapsa imediatamente. 
-
-Mario Duplantier é simplesmente sobrenatural atrás da bateria — a precisão cirúrgica contrastando com a intensidade física de cada golpe. 
+O set abre com "Amazonia" e o público colapsa imediatamente. Mario Duplantier é simplesmente sobrenatural atrás da bateria — a precisão cirúrgica contrastando com a intensidade física de cada golpe. 
 
 Joe Duplantier vira-se para a multidão e grita algo em francês que ninguém percebe mas toda a gente responde. 
 

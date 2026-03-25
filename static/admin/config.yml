@@ -4,6 +4,8 @@ backend:
   branch: main
   base_url: https://sveltia-cms-auth.leftfield.workers.dev
 
+local_backend: true
+
 site_url: https://musictide.pages.dev
 
 media_libraries:
@@ -204,6 +206,9 @@ collections:
               - { label: "Punk (castanho quente, vermelho, verde-lima)", value: punk }
               - { label: "Indie (azul noite, coral, teal)", value: indie }
               - { label: "Minimal (cinzento, preto, pedra)", value: minimal }
+              - { label: "Slate (azul-acinzentado, editorial)", value: slate }
+              - { label: "Zinc (cinzento quente, âmbar)", value: zinc }
+              - { label: "Forest (verde escuro, dourado)", value: forest }
             default: dark-metal
             hint: "Esquema de cores do site"
 
@@ -214,6 +219,10 @@ collections:
               - { label: "Sistema (padrão)", value: system }
               - { label: "Bebas Neue (impacto, metal)", value: bebas-neue }
               - { label: "Oswald (condensado, editorial)", value: oswald }
+              - { label: "Antonio (alto, desportivo)", value: antonio }
+              - { label: "Barlow Condensed (industrial, técnico)", value: barlow }
+              - { label: "Fjalla One (editorial, forte)", value: fjalla }
+              - { label: "Special Elite (máquina de escrever, punk)", value: special-elite }
               - { label: "Playfair Display (elegante, serifado)", value: playfair }
               - { label: "Inter (moderno, neutro)", value: inter }
               - { label: "Roboto Slab (sólido, serifado)", value: roboto-slab }
@@ -226,7 +235,27 @@ collections:
             options:
               - { label: "Sistema (padrão)", value: system }
               - { label: "Inter (moderno, neutro)", value: inter }
+              - { label: "Lato (limpo, legível)", value: lato }
+              - { label: "Merriweather (literário, editorial)", value: merriweather }
               - { label: "Roboto Slab (sólido, serifado)", value: roboto-slab }
               - { label: "Playfair Display (elegante, serifado)", value: playfair }
             default: system
             hint: "Tipo de letra para o corpo do texto"
+
+          - label: Layout da Homepage
+            name: homepage_layout
+            widget: select
+            options:
+              - { label: "Página (artigos recentes)", value: page }
+              - { label: "Hero (último artigo em destaque)", value: hero }
+              - { label: "Background (imagem de fundo + perfil)", value: background }
+              - { label: "Card (perfil + imagem ao lado)", value: card }
+              - { label: "Perfil (centrado)", value: profile }
+            default: page
+            hint: "Estrutura da página inicial"
+
+          - label: Imagem da Homepage
+            name: homepage_image
+            widget: image
+            required: false
+            hint: "Fundo para os layouts Hero e Background (usado quando o último artigo não tem imagem)"

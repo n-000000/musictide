@@ -228,6 +228,8 @@ These are placeholder content for development. Remove before going live with rea
 - **`.worktrees/` is gitignored** — worktrees live at `.worktrees/<branch-name>`.
 - **Sveltia media cache bug:** Media list is fetched once per session. Uploading via one image field then opening another field's picker won't show the new file until page reload.
 - **`/pt/` returns 200** — Hugo generates aliases. This is expected, not a bug.
+- **`local_backend: true` only activates on localhost** — safe to commit. In production (musictide.pages.dev) it is silently ignored and the GitHub OAuth backend is used as normal. Requires `yarn cms` running alongside `yarn watch` to be useful.
+- **`yarn cms` installs on first run** — `npx netlify-cms-proxy-server` downloads the package on first invocation; subsequent runs use the npx cache.
 
 ---
 
@@ -235,6 +237,7 @@ These are placeholder content for development. Remove before going live with rea
 
 ### Not yet implemented
 
+- **Visual design** — Final aesthetic not chosen. n0xx is actively iterating on color scheme, typography, and homepage layout. Current working config: dark-metal + Bebas Neue + Playfair. Hero and background layouts built but not battle-tested with real article content.
 - **Bilingual authoring workflow** — EN translations for articles. Translation-by-filename is set up but no EN content exists yet. Sveltia i18n per-field config not yet added.
 - **Ads display** — Client-side JS to interleave active ads into article listing pages.
 - **Events taxonomy templates** — `content/events/` exists as a CMS lookup collection but has no custom Hugo taxonomy templates (no banner/description display on event pages).

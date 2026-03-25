@@ -1,5 +1,5 @@
 colorScheme: slate
-heading_font: antonio
-body_font: inter
+heading_font: system
+body_font: system
 homepage_layout: hero
 homepage_image: ''

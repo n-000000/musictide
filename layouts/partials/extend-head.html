@@ -1,13 +1,9 @@
 {{- /*
   extend-head.html — Blowfish hook, injected into <head> on every page.
 
-  1. Loads the color scheme from assets/css/schemes/ based on
-     data/style.yaml colorScheme. This link comes after Blowfish's
-     bundled CSS, so it naturally overrides the default scheme.
-
-  2. Injects Google Fonts for heading/body if configured in data/style.yaml.
-
-  3. Gallery CSS media queries for the article photo grid.
+  1. Color scheme from assets/css/schemes/ based on data/style.yaml
+  2. Google Fonts for heading/body if configured
+  3. Musictide custom styles: hero, grain, cards, typography
 */ -}}
 
 {{- $style := hugo.Data.style -}}
@@ -56,7 +52,77 @@
   h1, h2, h3, h4, h5, h6 { font-family: {{ $hf.stack }}; }
   {{- end }}
 
-  /* ── Article gallery ────────────────────────────────────────── */
+  /* ── Hero — full-viewport editorial layout ───────────────── */
+  .hero-home {
+    width: 100vw;
+    min-height: 100svh;
+    margin-left: calc(-50vw + 50%);
+  }
+
+  .hero-title {
+    font-size: clamp(2.8rem, 8vw, 6rem);
+    max-width: 16ch;
+    text-shadow:
+      0 2px 20px rgba(0,0,0,0.6),
+      0 0 60px rgba(0,0,0,0.3);
+  }
+
+  .hero-cta:hover {
+    transform: translateX(4px);
+    filter: brightness(1.15);
+  }
+
+  .hero-badge {
+    text-shadow: none;
+  }
+
+  /* ── Film grain overlay — SVG noise, pure CSS, mobile-safe ── */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    pointer-events: none;
+    opacity: 0.035;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.15'/%3E%3C/svg%3E");
+    background-repeat: repeat;
+    background-size: 300px 300px;
+    mix-blend-mode: overlay;
+  }
+
+  /* ── Cards — sharper, meaner ─────────────────────────────── */
+  .article-link--card {
+    border-radius: 0 !important;
+    border-color: rgba(var(--color-neutral-600), 0.4) !important;
+    transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+  }
+
+  .article-link--card:hover {
+    transform: translateY(-3px);
+    border-color: rgb(var(--color-primary-500)) !important;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.3), 0 0 0 1px rgba(var(--color-primary-500), 0.2);
+  }
+
+  .article-link--card .thumbnail_card {
+    transition: filter 0.3s ease;
+  }
+
+  .article-link--card:hover .thumbnail_card {
+    filter: brightness(1.08) contrast(1.05);
+  }
+
+  /* ── Hide language switcher (no EN content yet) ──────────── */
+  .translation {
+    display: none !important;
+  }
+
+  /* ── Fixed header transparency ───────────────────────────── */
+  header nav,
+  header > div {
+    background: transparent !important;
+  }
+
+  /* ── Article gallery ─────────────────────────────────────── */
   .mt-gallery {
     columns: 1;
     column-gap: 0.5rem;
@@ -72,21 +138,19 @@
     margin-bottom: 0.5rem;
   }
 
-  /* ── Square corners sitewide ───────────────────────────────── */
-  .article-link--card { border-radius: 0; }
-
-  /* ── Hero title stroke ──────────────────────────────────────── */
-  .hero-stroke-dark {
-    -webkit-text-stroke: 1px rgba(var(--color-neutral-900), 0.6);
-    paint-order: stroke fill;
-  }
-  .hero-stroke-light {
-    -webkit-text-stroke: 1px rgba(var(--color-neutral-100), 0.6);
-    paint-order: stroke fill;
-  }
-
-  /* ── View Transitions ───────────────────────────────────────── */
+  /* ── View Transitions ────────────────────────────────────── */
   @view-transition {
     navigation: auto;
+  }
+
+  /* ── Smooth scroll ───────────────────────────────────────── */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* ── Tag pills — tighter, more compact ───────────────────── */
+  .article-link--card a[href^="/tags/"] span {
+    font-size: 0.65rem;
+    padding: 0.15rem 0.45rem;
   }
 </style>

@@ -32,6 +32,8 @@ article:
   showTableOfContents: false
   showEdit: false
   showTaxonomies: true
+  showHero: true
+  heroStyle: big
 
 list:
   showCards: true

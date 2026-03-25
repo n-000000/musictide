@@ -42,6 +42,19 @@ yarn mirror             # Push to Codeberg backup mirror (git push codeberg main
 
 ---
 
+## Documentation
+
+When implementing features, always consult local docs first:
+
+- **Hugo:** `./docs/hugo/*.md`
+- **Blowfish (theme):** `./docs/blowfish/*.md`
+
+**Conflict resolution:**
+- If Blowfish docs and Hugo docs conflict, Blowfish takes precedence — unless the Blowfish docs explicitly defer to Hugo.
+- If both sets of docs address the same topic without conflict, ask the user which to follow before proceeding.
+
+---
+
 ## Architecture
 
 **Stack:** Hugo 0.158.0 Extended + Blowfish v2 (Hugo module) + Sveltia CMS + Cloudflare Pages + Cloudflare R2
@@ -202,7 +215,11 @@ These files override Blowfish defaults:
 
 **Scheme files:** `assets/css/schemes/*.css` — each defines a single `:root` block with `--color-neutral-*`, `--color-primary-*`, and `--color-secondary-*` CSS custom properties (10 shades each, RGB triplet format matching Blowfish conventions). No light/dark split needed — Blowfish handles dark mode by selecting different shade indices via Tailwind utilities.
 
-**8 schemes:** dark-metal (charcoal/blood-red/amber), goth (deep-purple/violet/rose), punk (warm-brown/hot-pink/yellow-green), indie (midnight-blue/coral/teal), minimal (gray/near-black/warm-stone), slate (cool blue-gray/deep-slate/cyan), zinc (warm-gray/near-black/amber), forest (olive-green/emerald/gold)
+**Custom schemes:** dark-metal (charcoal/blood-red/amber), goth (deep-purple/violet/rose), punk (warm-brown/hot-pink/yellow-green), indie (midnight-blue/coral/teal), minimal (gray/near-black/warm-stone), slab (cool blue-gray/deep-slate/cyan), zinc (warm-gray/near-black/amber), swamp (olive-green/emerald/gold)
+
+**Blowfish built-in schemes (also available):** blowfish, avocado, fire, ocean, forest, bloody, terminal, neon, marvel, noir, autumn, congo, princess, slate, github, one-light
+
+Note: `slab` and `swamp` are renamed versions of what were previously `slate` and `forest` locally, to avoid shadowing the Blowfish built-ins of those names.
 
 **Font options (headings):** system, bebas-neue, oswald, antonio, barlow, fjalla, special-elite, playfair, inter, roboto-slab
 **Font options (body):** system, inter, lato, merriweather, roboto-slab, playfair

@@ -22,13 +22,36 @@
   {{- $bgURL = $siteStyle.homepage_image | default "" -}}
 {{- end -}}
 
-<article class="max-w-full prose dark:prose-invert">
+{{- /* Determine text color from image center luminance.
+     Default to light text — most concert photos are dark. */ -}}
+{{- $textClass   := "text-neutral-100" -}}
+{{- $strokeClass := "hero-stroke-dark" -}}
+{{- if $bgURL -}}
+  {{- with resources.GetRemote $bgURL -}}
+    {{- $thumb  := .Fill "100x100 Center" -}}
+    {{- $colors := $thumb.Colors -}}
+    {{- if $colors -}}
+      {{- $sum := 0.0 -}}
+      {{- $n   := 0   -}}
+      {{- range $colors -}}
+        {{- $sum = add $sum .Luminance -}}
+        {{- $n   = add $n   1         -}}
+      {{- end -}}
+      {{- if gt (div $sum $n) 0.5 -}}
+        {{- $textClass   = "text-neutral-900" -}}
+        {{- $strokeClass = "hero-stroke-light" -}}
+      {{- end -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+
+<article class="max-w-full">
   <div class="relative">
     <div class="absolute inset-x-0 bottom-0 h-1/2"></div>
     <div class="mx-auto max-w-7xl p-0">
-      <div class="relative shadow-xl sm:overflow-hidden rounded-2xl">
+      <div class="relative shadow-xl sm:overflow-hidden">
 
-        {{- /* Background image + colour overlay */ -}}
+        {{- /* Background image */ -}}
         <div class="absolute inset-0">
           {{- if $bgURL }}
           <img
@@ -36,38 +59,37 @@
             src="{{ $bgURL }}"
             alt="">
           {{- end }}
-          <div class="absolute inset-0 bg-gradient-to-r from-primary-500 to-secondary-600 dark:from-primary-600 dark:to-secondary-800 mix-blend-multiply"></div>
         </div>
 
-        {{- /* Hero content overlay */ -}}
+        {{- /* Hero content — text colors derived from image */ -}}
         <div class="relative px-4 py-16 sm:px-6 sm:py-24 lg:py-32 lg:px-8 flex flex-col items-center justify-center text-center">
           {{- if $latest }}
 
             {{- with $latest.Params.event }}
-            <span class="mb-3 inline-block text-xs font-bold uppercase tracking-widest text-secondary-300 border border-secondary-400 px-3 py-1 rounded-full">
+            <span class="mb-3 inline-block text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-none bg-primary-500 text-neutral-100">
               {{ . }}
             </span>
             {{- end }}
 
-            <h1 class="mb-4 text-4xl font-extrabold text-neutral-100 leading-tight max-w-3xl">
-              <a href="{{ $latest.Permalink }}" class="no-underline text-neutral-100 hover:text-secondary-300">
+            <h1 class="mb-4 text-4xl font-extrabold leading-tight max-w-3xl {{ $textClass }} {{ $strokeClass }}">
+              <a href="{{ $latest.Permalink }}" class="no-underline {{ $textClass }}">
                 {{ $latest.Title }}
               </a>
             </h1>
 
             {{- with $latest.Params.featureimagecaption }}
-            <p class="mt-0 mb-6 text-base text-neutral-300 italic max-w-xl">{{ . }}</p>
+            <p class="mt-0 mb-6 text-base italic max-w-xl opacity-85 {{ $textClass }}">{{ . }}</p>
             {{- end }}
 
             <a href="{{ $latest.Permalink }}"
-               class="mt-2 inline-block px-6 py-3 rounded-full bg-primary-500 text-white no-underline text-sm font-semibold uppercase tracking-wider hover:bg-primary-400 transition-colors">
+               class="mt-2 inline-block px-6 py-3 rounded-none no-underline text-sm font-semibold uppercase tracking-wider transition-colors bg-primary-500 text-neutral-100 hover:bg-primary-400">
               Ler artigo →
             </a>
 
           {{- else }}
 
             {{- /* Fallback when no articles exist yet */ -}}
-            <h1 class="mb-2 text-4xl font-extrabold text-neutral-200">
+            <h1 class="mb-2 text-4xl font-extrabold {{ $textClass }}">
               {{ site.Title }}
             </h1>
 
@@ -78,6 +100,29 @@
     </div>
   </div>
 </article>
+{{- /* Recent articles — hero post excluded to avoid duplication */ -}}
+{{- if .Site.Params.homepage.showRecent | default false -}}
+  {{- $count := .Site.Params.homepage.showRecentItems | default 5 -}}
+  {{- $mainSections := .Site.Params.mainSections | default (slice "posts") -}}
+  {{- $remaining := where site.RegularPages "Type" "in" $mainSections -}}
+  {{- if $latest -}}
+    {{- $remaining = where $remaining "Permalink" "ne" $latest.Permalink -}}
+  {{- end -}}
 <section>
-  {{ partial "recent-articles/main.html" . }}
+  <h2 class="mt-8 text-2xl font-extrabold mb-10">{{ i18n "shortcode.recent_articles" | emojify }}</h2>
+  <section class="w-full grid gap-4 sm:grid-cols-2 md:grid-cols-3">
+    {{- range first $count $remaining -}}
+      {{ partial "article-link/card.html" . }}
+    {{- end -}}
+  </section>
+  {{- if .Site.Params.homepage.showMoreLink | default false }}
+  <div class="mt-10 flex justify-center">
+    <a href="{{ (.Site.Params.homepage.showMoreLinkDest | default "/posts/") | relLangURL }}">
+      <button class="bg-transparent hover:text-primary-500 prose dark:prose-invert font-semibold py-2 px-4 border border-primary-500 hover:border-transparent">
+        {{ i18n "recent.show_more" | markdownify }}
+      </button>
+    </a>
+  </div>
+  {{- end }}
 </section>
+{{- end -}}

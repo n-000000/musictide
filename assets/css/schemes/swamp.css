@@ -1,0 +1,36 @@
+/* forest — dark olive/forest neutrals, deep emerald primary, muted gold secondary */
+:root {
+  --color-neutral: 255, 255, 255;
+  --color-neutral-50:  248, 252, 248;
+  --color-neutral-100: 228, 240, 228;
+  --color-neutral-200: 195, 218, 194;
+  --color-neutral-300: 152, 188, 150;
+  --color-neutral-400: 108, 152, 105;
+  --color-neutral-500: 72,  115, 68;
+  --color-neutral-600: 46,  82,  42;
+  --color-neutral-700: 26,  54,  22;
+  --color-neutral-800: 12,  28,  10;
+  --color-neutral-900: 4,   12,  4;
+  /* Deep emerald */
+  --color-primary-50:  228, 252, 238;
+  --color-primary-100: 178, 240, 202;
+  --color-primary-200: 112, 218, 158;
+  --color-primary-300: 52,  188, 110;
+  --color-primary-400: 6,   152, 68;
+  --color-primary-500: 0,   118, 44;
+  --color-primary-600: 0,   88,  28;
+  --color-primary-700: 0,   62,  16;
+  --color-primary-800: 0,   38,  8;
+  --color-primary-900: 0,   16,  2;
+  /* Muted gold */
+  --color-secondary-50:  255, 252, 228;
+  --color-secondary-100: 255, 244, 178;
+  --color-secondary-200: 248, 224, 108;
+  --color-secondary-300: 232, 195, 46;
+  --color-secondary-400: 205, 162, 0;
+  --color-secondary-500: 165, 125, 0;
+  --color-secondary-600: 122, 90,  0;
+  --color-secondary-700: 82,  58,  0;
+  --color-secondary-800: 46,  32,  0;
+  --color-secondary-900: 18,  12,  0;
+}

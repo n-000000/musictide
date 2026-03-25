@@ -31,7 +31,9 @@ article:
   showWordCount: false
   showTableOfContents: false
   showEdit: false
+  showTaxonomies: true
 
 list:
   showCards: true
   showTableOfContents: false
+  showSummary: true

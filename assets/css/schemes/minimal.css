@@ -1,0 +1,36 @@
+/* minimal — pure grays, near-black primary, warm stone secondary */
+:root {
+  --color-neutral: 255, 255, 255;
+  --color-neutral-50:  255, 255, 255;
+  --color-neutral-100: 248, 248, 248;
+  --color-neutral-200: 232, 232, 232;
+  --color-neutral-300: 200, 200, 200;
+  --color-neutral-400: 165, 165, 165;
+  --color-neutral-500: 128, 128, 128;
+  --color-neutral-600: 94,  94,  94;
+  --color-neutral-700: 64,  64,  64;
+  --color-neutral-800: 36,  36,  36;
+  --color-neutral-900: 12,  12,  12;
+  /* Near-black */
+  --color-primary-50:  248, 248, 248;
+  --color-primary-100: 225, 225, 225;
+  --color-primary-200: 195, 195, 195;
+  --color-primary-300: 155, 155, 155;
+  --color-primary-400: 100, 100, 100;
+  --color-primary-500: 68,  68,  68;
+  --color-primary-600: 44,  44,  44;
+  --color-primary-700: 28,  28,  28;
+  --color-primary-800: 16,  16,  16;
+  --color-primary-900: 6,   6,   6;
+  /* Warm stone */
+  --color-secondary-50:  252, 250, 246;
+  --color-secondary-100: 240, 235, 228;
+  --color-secondary-200: 218, 208, 196;
+  --color-secondary-300: 188, 175, 158;
+  --color-secondary-400: 155, 140, 120;
+  --color-secondary-500: 118, 104, 86;
+  --color-secondary-600: 86,  74,  58;
+  --color-secondary-700: 58,  48,  36;
+  --color-secondary-800: 34,  28,  20;
+  --color-secondary-900: 15,  12,  8;
+}

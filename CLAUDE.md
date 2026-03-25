@@ -186,21 +186,23 @@ These files override Blowfish defaults:
 |------|---------|
 | `layouts/_default/single.html` | Article template — injects gallery partial below body, uses `hugo.Data` (not deprecated `site.Data`). `max-w-prose` removed from header, content div, and footer so all elements span the full content column width. |
 | `layouts/partials/article-gallery.html` | Renders `gallery` frontmatter as responsive CSS columns grid (1 col mobile, 2 col ≥640px, 3 col ≥1024px). No `<a>` wrapper — Blowfish's Tobii zoom handles clicks |
-| `layouts/partials/extend-head.html` | Palette CSS custom properties (reads `data/style.yaml`), gallery CSS media queries |
+| `layouts/partials/extend-head.html` | Dynamically loads scheme CSS from `assets/css/schemes/<colorScheme>.css` via Hugo asset pipeline (minified + fingerprinted). Also loads Google Fonts and gallery CSS media queries. |
 | `layouts/partials/extend-footer.html` | Client-side JS that strips `#` from hashtags in rendered article content |
 
 ---
 
 ## Styling System
 
-`data/style.yaml` stores the active palette and font choices. `extend-head.html` reads it and outputs CSS custom properties that override Blowfish's defaults for both light and dark mode.
+`data/style.yaml` stores the active color scheme and font choices. `extend-head.html` reads it and dynamically loads the appropriate scheme CSS file from `assets/css/schemes/` via Hugo's asset pipeline (minified + fingerprinted). The scheme `<link>` is injected after Blowfish's bundled CSS, so it naturally overrides Blowfish's default color variables without touching `head.html`.
 
-**5 palettes:** dark-metal, goth, punk, indie, minimal
+**Scheme files:** `assets/css/schemes/{dark-metal,goth,punk,indie,minimal}.css` — each defines a single `:root` block with `--color-neutral-*`, `--color-primary-*`, and `--color-secondary-*` CSS custom properties (10 shades each, RGB triplet format matching Blowfish conventions). No light/dark split needed — Blowfish handles dark mode by selecting different shade indices via Tailwind utilities.
+
+**5 schemes:** dark-metal (charcoal/blood-red/amber), goth (deep-purple/violet/rose), punk (warm-brown/hot-pink/yellow-green), indie (midnight-blue/coral/teal), minimal (gray/near-black/warm-stone)
 
 **Font options (headings):** system, bebas-neue, oswald, playfair, inter, roboto-slab
 **Font options (body):** system, inter, roboto-slab, playfair
 
-Switchable via CMS at Definições → Estilo Visual. Currently set to `indie` palette with system fonts.
+Switchable via CMS at Definições → Estilo Visual. Currently set to `goth` with `inter` headings and system body font.
 
 ---
 
@@ -269,6 +271,7 @@ Condensed timeline of key milestones:
 | 2026-03-22 | CMS assessment: 11 issues documented, three paths forward evaluated (A: accept markdown, B: block-based content, C: replace Sveltia). Quick fixes applied (cover image, date defaults, multi-image gallery, event relation widget). |
 | 2026-03-23 | R2 proxy Worker built (`workers/r2-proxy/`). Fetch interceptor in `index.html`. Date-based upload prefixes. GitHub OAuth auth on uploads. Daily orphan cleanup cron. |
 | 2026-03-24 | Styling system (5 palettes, fonts, CSS custom properties via `data/style.yaml`). Homepage article grid. Article gallery partial. Hashtag extraction preSave hook. Mock articles. Body field changed to text widget. All committed and pushed. |
+| 2026-03-25 | Color scheme migration: replaced homebrew CSS custom property inline blocks in `extend-head.html` with native Blowfish scheme CSS files (`assets/css/schemes/*.css`). Proper `:root` + RGB triplet format. Scheme loaded via Hugo asset pipeline. Article layout fix: removed `max-w-prose` from header, content div, and footer in `single.html` so all elements span full content column width. |
 
 Design docs live in `docs/superpowers/specs/` and `docs/superpowers/plans/` — useful for understanding rationale behind decisions but may be outdated relative to current code.
 

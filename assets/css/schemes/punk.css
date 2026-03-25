@@ -1,0 +1,36 @@
+/* punk — warm off-white neutrals, hot pink-red, electric yellow-green */
+:root {
+  --color-neutral: 255, 255, 255;
+  --color-neutral-50:  255, 255, 255;
+  --color-neutral-100: 252, 248, 244;
+  --color-neutral-200: 240, 232, 222;
+  --color-neutral-300: 212, 198, 185;
+  --color-neutral-400: 172, 155, 138;
+  --color-neutral-500: 130, 112, 96;
+  --color-neutral-600: 92,  76,  62;
+  --color-neutral-700: 60,  46,  34;
+  --color-neutral-800: 34,  24,  15;
+  --color-neutral-900: 14,  8,   3;
+  /* Hot pink-red */
+  --color-primary-50:  255, 235, 240;
+  --color-primary-100: 255, 195, 210;
+  --color-primary-200: 255, 145, 168;
+  --color-primary-300: 255, 82,  118;
+  --color-primary-400: 238, 25,  72;
+  --color-primary-500: 205, 0,   48;
+  --color-primary-600: 168, 0,   36;
+  --color-primary-700: 128, 0,   26;
+  --color-primary-800: 88,  0,   15;
+  --color-primary-900: 50,  0,   8;
+  /* Electric yellow-green */
+  --color-secondary-50:  250, 255, 210;
+  --color-secondary-100: 235, 255, 155;
+  --color-secondary-200: 210, 245, 85;
+  --color-secondary-300: 178, 220, 18;
+  --color-secondary-400: 142, 185, 0;
+  --color-secondary-500: 108, 148, 0;
+  --color-secondary-600: 78,  112, 0;
+  --color-secondary-700: 54,  80,  0;
+  --color-secondary-800: 34,  52,  0;
+  --color-secondary-900: 16,  26,  0;
+}

@@ -195,15 +195,15 @@ collections:
         file: data/style.yaml
         fields:
 
-          - label: Paleta de Cores
-            name: palette
+          - label: Esquema de Cores
+            name: colorScheme
             widget: select
             options:
-              - { label: "Dark Metal (fundo preto, vermelho)", value: dark-metal }
-              - { label: "Goth (roxo escuro, violeta)", value: goth }
-              - { label: "Punk (fundo claro, vermelho vivo)", value: punk }
-              - { label: "Indie (azul escuro, rosa/coral)", value: indie }
-              - { label: "Minimal (branco, preto)", value: minimal }
+              - { label: "Dark Metal (preto, vermelho, âmbar)", value: dark-metal }
+              - { label: "Goth (roxo escuro, violeta, rosa)", value: goth }
+              - { label: "Punk (castanho quente, vermelho, verde-lima)", value: punk }
+              - { label: "Indie (azul noite, coral, teal)", value: indie }
+              - { label: "Minimal (cinzento, preto, pedra)", value: minimal }
             default: dark-metal
             hint: "Esquema de cores do site"
 

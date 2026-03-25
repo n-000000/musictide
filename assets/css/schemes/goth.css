@@ -1,0 +1,36 @@
+/* goth — deep purple neutrals, violet, rose */
+:root {
+  --color-neutral: 255, 255, 255;
+  --color-neutral-50:  252, 250, 255;
+  --color-neutral-100: 242, 237, 252;
+  --color-neutral-200: 224, 214, 245;
+  --color-neutral-300: 190, 175, 225;
+  --color-neutral-400: 155, 138, 200;
+  --color-neutral-500: 118, 100, 165;
+  --color-neutral-600: 86,  70,  130;
+  --color-neutral-700: 58,  44,  95;
+  --color-neutral-800: 30,  20,  58;
+  --color-neutral-900: 12,  6,   24;
+  /* Violet */
+  --color-primary-50:  248, 240, 255;
+  --color-primary-100: 232, 210, 255;
+  --color-primary-200: 210, 170, 255;
+  --color-primary-300: 180, 130, 245;
+  --color-primary-400: 148, 88,  225;
+  --color-primary-500: 120, 60,  195;
+  --color-primary-600: 92,  40,  158;
+  --color-primary-700: 68,  24,  120;
+  --color-primary-800: 46,  12,  85;
+  --color-primary-900: 26,  4,   52;
+  /* Deep rose */
+  --color-secondary-50:  255, 238, 248;
+  --color-secondary-100: 255, 208, 235;
+  --color-secondary-200: 252, 165, 212;
+  --color-secondary-300: 240, 112, 182;
+  --color-secondary-400: 215, 65,  148;
+  --color-secondary-500: 178, 28,  112;
+  --color-secondary-600: 140, 8,   82;
+  --color-secondary-700: 105, 0,   58;
+  --color-secondary-800: 72,  0,   38;
+  --color-secondary-900: 42,  0,   20;
+}

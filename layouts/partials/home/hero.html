@@ -1,0 +1,83 @@
+{{- /*
+  home/hero.html — musictide override.
+  Shows the latest non-draft article as a full-bleed hero card.
+  Falls back to homepage_image from data/style.yaml if the article
+  has no featureimage. Below the hero: recent-articles grid.
+*/ -}}
+{{- $siteStyle := hugo.Data.style -}}
+
+{{- /* Latest non-draft post */ -}}
+{{- $posts := where (where site.RegularPages "Section" "posts") ".Params.draft" "ne" true -}}
+{{- $posts = $posts.ByDate.Reverse -}}
+{{- $latest := index $posts 0 -}}
+
+{{- /* Resolve hero background image URL */ -}}
+{{- $bgURL := "" -}}
+{{- if $latest -}}
+  {{- with $latest.Params.featureimage -}}
+    {{- $bgURL = . -}}
+  {{- end -}}
+{{- end -}}
+{{- if not $bgURL -}}
+  {{- $bgURL = $siteStyle.homepage_image | default "" -}}
+{{- end -}}
+
+<article class="max-w-full prose dark:prose-invert">
+  <div class="relative">
+    <div class="absolute inset-x-0 bottom-0 h-1/2"></div>
+    <div class="mx-auto max-w-7xl p-0">
+      <div class="relative shadow-xl sm:overflow-hidden rounded-2xl">
+
+        {{- /* Background image + colour overlay */ -}}
+        <div class="absolute inset-0">
+          {{- if $bgURL }}
+          <img
+            class="h-full w-full object-cover nozoom mt-0 mr-0 mb-0 ml-0"
+            src="{{ $bgURL }}"
+            alt="">
+          {{- end }}
+          <div class="absolute inset-0 bg-gradient-to-r from-primary-500 to-secondary-600 dark:from-primary-600 dark:to-secondary-800 mix-blend-multiply"></div>
+        </div>
+
+        {{- /* Hero content overlay */ -}}
+        <div class="relative px-4 py-16 sm:px-6 sm:py-24 lg:py-32 lg:px-8 flex flex-col items-center justify-center text-center">
+          {{- if $latest }}
+
+            {{- with $latest.Params.event }}
+            <span class="mb-3 inline-block text-xs font-bold uppercase tracking-widest text-secondary-300 border border-secondary-400 px-3 py-1 rounded-full">
+              {{ . }}
+            </span>
+            {{- end }}
+
+            <h1 class="mb-4 text-4xl font-extrabold text-neutral-100 leading-tight max-w-3xl">
+              <a href="{{ $latest.Permalink }}" class="no-underline text-neutral-100 hover:text-secondary-300">
+                {{ $latest.Title }}
+              </a>
+            </h1>
+
+            {{- with $latest.Params.featureimagecaption }}
+            <p class="mt-0 mb-6 text-base text-neutral-300 italic max-w-xl">{{ . }}</p>
+            {{- end }}
+
+            <a href="{{ $latest.Permalink }}"
+               class="mt-2 inline-block px-6 py-3 rounded-full bg-primary-500 text-white no-underline text-sm font-semibold uppercase tracking-wider hover:bg-primary-400 transition-colors">
+              Ler artigo →
+            </a>
+
+          {{- else }}
+
+            {{- /* Fallback when no articles exist yet */ -}}
+            <h1 class="mb-2 text-4xl font-extrabold text-neutral-200">
+              {{ site.Title }}
+            </h1>
+
+          {{- end }}
+        </div>
+
+      </div>
+    </div>
+  </div>
+</article>
+<section>
+  {{ partial "recent-articles/main.html" . }}
+</section>

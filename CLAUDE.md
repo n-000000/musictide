@@ -25,6 +25,8 @@ npx wrangler secret list --name worker-name
 
 # Development
 yarn watch              # Hugo dev server (hot reload) at http://localhost:1313
+yarn cms                # Local CMS backend proxy (port 8081) — run alongside yarn watch
+                        # for local CMS editing without waiting for Cloudflare Pages CI
 
 # Build
 yarn build              # Production build (hugo --gc --minify)
@@ -186,6 +188,9 @@ These files override Blowfish defaults:
 |------|---------|
 | `layouts/_default/single.html` | Article template — injects gallery partial below body, uses `hugo.Data` (not deprecated `site.Data`). `max-w-prose` removed from header, content div, and footer so all elements span the full content column width. |
 | `layouts/partials/article-gallery.html` | Renders `gallery` frontmatter as responsive CSS columns grid (1 col mobile, 2 col ≥640px, 3 col ≥1024px). No `<a>` wrapper — Blowfish's Tobii zoom handles clicks |
+| `layouts/index.html` | Homepage entry point — reads `hugo.Data.style.homepage_layout` and dispatches to the appropriate `home/*.html` partial. Overrides Blowfish's version which reads from `params.yaml`. |
+| `layouts/partials/home/hero.html` | Custom hero layout showing latest non-draft article (featureimage as background, title, event badge, "Ler artigo" CTA). Falls back to `data/style.yaml homepage_image`. |
+| `layouts/partials/home/background.html` | Copy of Blowfish's background layout extended to also read `hugo.Data.style.homepage_image` as image source. |
 | `layouts/partials/extend-head.html` | Dynamically loads scheme CSS from `assets/css/schemes/<colorScheme>.css` via Hugo asset pipeline (minified + fingerprinted). Also loads Google Fonts and gallery CSS media queries. |
 | `layouts/partials/extend-footer.html` | Client-side JS that strips `#` from hashtags in rendered article content |
 
@@ -195,14 +200,16 @@ These files override Blowfish defaults:
 
 `data/style.yaml` stores the active color scheme and font choices. `extend-head.html` reads it and dynamically loads the appropriate scheme CSS file from `assets/css/schemes/` via Hugo's asset pipeline (minified + fingerprinted). The scheme `<link>` is injected after Blowfish's bundled CSS, so it naturally overrides Blowfish's default color variables without touching `head.html`.
 
-**Scheme files:** `assets/css/schemes/{dark-metal,goth,punk,indie,minimal}.css` — each defines a single `:root` block with `--color-neutral-*`, `--color-primary-*`, and `--color-secondary-*` CSS custom properties (10 shades each, RGB triplet format matching Blowfish conventions). No light/dark split needed — Blowfish handles dark mode by selecting different shade indices via Tailwind utilities.
+**Scheme files:** `assets/css/schemes/*.css` — each defines a single `:root` block with `--color-neutral-*`, `--color-primary-*`, and `--color-secondary-*` CSS custom properties (10 shades each, RGB triplet format matching Blowfish conventions). No light/dark split needed — Blowfish handles dark mode by selecting different shade indices via Tailwind utilities.
 
-**5 schemes:** dark-metal (charcoal/blood-red/amber), goth (deep-purple/violet/rose), punk (warm-brown/hot-pink/yellow-green), indie (midnight-blue/coral/teal), minimal (gray/near-black/warm-stone)
+**8 schemes:** dark-metal (charcoal/blood-red/amber), goth (deep-purple/violet/rose), punk (warm-brown/hot-pink/yellow-green), indie (midnight-blue/coral/teal), minimal (gray/near-black/warm-stone), slate (cool blue-gray/deep-slate/cyan), zinc (warm-gray/near-black/amber), forest (olive-green/emerald/gold)
 
-**Font options (headings):** system, bebas-neue, oswald, playfair, inter, roboto-slab
-**Font options (body):** system, inter, roboto-slab, playfair
+**Font options (headings):** system, bebas-neue, oswald, antonio, barlow, fjalla, special-elite, playfair, inter, roboto-slab
+**Font options (body):** system, inter, lato, merriweather, roboto-slab, playfair
 
-Switchable via CMS at Definições → Estilo Visual. Currently set to `goth` with `inter` headings and system body font.
+**Homepage layout** is controlled by `data/style.yaml` → `homepage_layout` field (page, hero, background, card, profile). `layouts/index.html` is overridden locally to read this from `hugo.Data.style` instead of `params.yaml`. The `hero` layout is a fully custom override showing the latest non-draft article with its `featureimage` as a full-bleed background. The `background` layout is overridden to also pick up `homepage_image` from `data/style.yaml`.
+
+All fields switchable via CMS at Definições → Estilo Visual.
 
 ---
 
@@ -271,7 +278,7 @@ Condensed timeline of key milestones:
 | 2026-03-22 | CMS assessment: 11 issues documented, three paths forward evaluated (A: accept markdown, B: block-based content, C: replace Sveltia). Quick fixes applied (cover image, date defaults, multi-image gallery, event relation widget). |
 | 2026-03-23 | R2 proxy Worker built (`workers/r2-proxy/`). Fetch interceptor in `index.html`. Date-based upload prefixes. GitHub OAuth auth on uploads. Daily orphan cleanup cron. |
 | 2026-03-24 | Styling system (5 palettes, fonts, CSS custom properties via `data/style.yaml`). Homepage article grid. Article gallery partial. Hashtag extraction preSave hook. Mock articles. Body field changed to text widget. All committed and pushed. |
-| 2026-03-25 | Color scheme migration: replaced homebrew CSS custom property inline blocks in `extend-head.html` with native Blowfish scheme CSS files (`assets/css/schemes/*.css`). Proper `:root` + RGB triplet format. Scheme loaded via Hugo asset pipeline. Article layout fix: removed `max-w-prose` from header, content div, and footer in `single.html` so all elements span full content column width. |
+| 2026-03-25 | Color scheme migration: replaced homebrew CSS custom property inline blocks in `extend-head.html` with native Blowfish scheme CSS files (`assets/css/schemes/*.css`). Article layout fix: removed `max-w-prose` from header/content/footer. Homepage layout switching via `data/style.yaml` (local `layouts/index.html` override). Custom hero layout showing latest article. Background layout override. 8 color schemes, 10 heading fonts, 6 body fonts. CMS local_backend support via `yarn cms`. |
 
 Design docs live in `docs/superpowers/specs/` and `docs/superpowers/plans/` — useful for understanding rationale behind decisions but may be outdated relative to current code.
 

@@ -1,0 +1,10 @@
+{{ define "main" }}
+  {{- $style := hugo.Data.style -}}
+  {{- $layout := $style.homepage_layout | default (.Site.Params.homepage.layout | default "page") -}}
+  {{- $partial := print "home/" $layout ".html" -}}
+  {{- if templates.Exists (printf "partials/%s" $partial) -}}
+    {{ partial $partial . }}
+  {{- else -}}
+    {{ partial "home/profile.html" . }}
+  {{- end -}}
+{{ end }}

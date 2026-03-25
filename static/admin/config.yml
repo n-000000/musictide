@@ -206,9 +206,25 @@ collections:
               - { label: "Punk (castanho quente, vermelho, verde-lima)", value: punk }
               - { label: "Indie (azul noite, coral, teal)", value: indie }
               - { label: "Minimal (cinzento, preto, pedra)", value: minimal }
-              - { label: "Slate (azul-acinzentado, editorial)", value: slate }
+              - { label: "Slab (azul-acinzentado, editorial)", value: slab }
               - { label: "Zinc (cinzento quente, âmbar)", value: zinc }
-              - { label: "Forest (verde escuro, dourado)", value: forest }
+              - { label: "Swamp (verde escuro, dourado)", value: swamp }
+              - { label: "Blowfish (padrão do tema)", value: blowfish }
+              - { label: "Avocado", value: avocado }
+              - { label: "Fire (vermelho, laranja)", value: fire }
+              - { label: "Ocean (azul profundo)", value: ocean }
+              - { label: "Forest (verde tema)", value: forest }
+              - { label: "Bloody (vermelho intenso)", value: bloody }
+              - { label: "Terminal (verde terminal)", value: terminal }
+              - { label: "Neon", value: neon }
+              - { label: "Marvel", value: marvel }
+              - { label: "Noir (preto e branco)", value: noir }
+              - { label: "Autumn (castanho, laranja)", value: autumn }
+              - { label: "Congo", value: congo }
+              - { label: "Princess", value: princess }
+              - { label: "Slate (azul-cinza tema)", value: slate }
+              - { label: "Github", value: github }
+              - { label: "One Light", value: one-light }
             default: dark-metal
             hint: "Esquema de cores do site"
 

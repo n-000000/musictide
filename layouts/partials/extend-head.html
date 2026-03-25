@@ -71,4 +71,22 @@
     break-inside: avoid;
     margin-bottom: 0.5rem;
   }
+
+  /* ── Square corners sitewide ───────────────────────────────── */
+  .article-link--card { border-radius: 0; }
+
+  /* ── Hero title stroke ──────────────────────────────────────── */
+  .hero-stroke-dark {
+    -webkit-text-stroke: 1px rgba(var(--color-neutral-900), 0.6);
+    paint-order: stroke fill;
+  }
+  .hero-stroke-light {
+    -webkit-text-stroke: 1px rgba(var(--color-neutral-100), 0.6);
+    paint-order: stroke fill;
+  }
+
+  /* ── View Transitions ───────────────────────────────────────── */
+  @view-transition {
+    navigation: auto;
+  }
 </style>

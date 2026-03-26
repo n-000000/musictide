@@ -47,6 +47,11 @@
 {{- end }}
 
 <style>
+  /* ── Global zero border-radius ───────────────────────────── */
+  *, *::before, *::after {
+    border-radius: 0 !important;
+  }
+
   {{- if or (ne $headingFont "system") (ne $bodyFont "system") }}
   html { font-family: {{ $bf.stack }}; }
   h1, h2, h3, h4, h5, h6 { font-family: {{ $hf.stack }}; }
@@ -76,7 +81,6 @@
 
   /* ── Cards — sharper, meaner ─────────────────────────────── */
   .article-link--card {
-    border-radius: 0 !important;
     border-color: rgba(var(--color-neutral-600), 0.4) !important;
     transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
   }

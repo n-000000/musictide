@@ -42,7 +42,7 @@
 {{- end }}
 
 {{- /* Hero content — article featureimage as hero-only background */ -}}
-<article class="max-w-full">
+<article class="max-w-full" style="margin-top:-148px;">
   <div class="relative">
     <div class="absolute inset-x-0 bottom-0 h-1/2"></div>
     <div class="relative w-screen px-[30px]" style="max-width: 1600px; margin-left: calc(max(-50vw, -800px) + 50%);">
@@ -66,16 +66,16 @@
         <div class="absolute inset-0" style="background:radial-gradient(ellipse at center,transparent 40%,rgba(0,0,0,.35) 100%)"></div>
         {{- end }}
 
-        <div class="absolute inset-0 flex flex-col justify-end items-start p-8 sm:p-12 lg:p-16">
+        <div class="hero-content">
           {{- if $latest }}
 
             {{- with $latest.Params.event }}
-            <span class="mb-2 inline-block text-sm font-bold uppercase tracking-widest px-3 py-1 bg-primary-500 text-neutral-100 hero-badge">
+            <span class="bg-primary-500 text-neutral-100 hero-badge">
               {{ . }}
             </span>
             {{- end }}
 
-            <h1 class="text-5xl sm:text-6xl lg:text-7xl font-extrabold leading-none hero-title {{ $textClass }}">
+            <h1 class="hero-title {{ $textClass }}">
               {{ $latest.Title }}
             </h1>
 

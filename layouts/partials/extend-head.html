@@ -10,6 +10,8 @@
 {{- $colorScheme := $style.colorScheme | default "dark-metal" -}}
 {{- $headingFont := $style.heading_font | default "system" -}}
 {{- $bodyFont := $style.body_font | default "system" -}}
+{{- $contentStyle := $style.content_style | default "cards-wide" -}}
+{{- $isWide := or (eq $contentStyle "cards-wide") (eq $contentStyle "list-wide") -}}
 
 {{- /* ── Color scheme ──────────────────────────────────────────── */ -}}
 {{- $cssScheme := resources.Get (printf "css/schemes/%s.css" $colorScheme) -}}
@@ -138,6 +140,8 @@
     background: transparent !important;
   }
 
+  {{- if $isWide }}
+  /* wide: header bounds match the 1600px content container */
   header > div,
   header nav > div {
     max-width: 1600px !important;
@@ -147,6 +151,7 @@
     margin-right: auto !important;
     box-sizing: border-box;
   }
+  {{- end }}
 
   /* ── Article gallery ─────────────────────────────────────── */
   .mt-gallery {

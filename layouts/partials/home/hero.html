@@ -75,15 +75,6 @@
               </a>
             </h1>
 
-            {{- with $latest.Params.featureimagecaption }}
-            <p class="mt-0 mb-6 text-base italic max-w-xl opacity-85 hero-title {{ $textClass }}">{{ . }}</p>
-            {{- end }}
-
-            <a href="{{ $latest.Permalink }}"
-               class="mt-2 inline-block px-6 py-3 rounded-none no-underline text-sm font-semibold uppercase tracking-wider transition-colors bg-primary-500 text-neutral-100 hover:bg-primary-400">
-              Ler artigo →
-            </a>
-
           {{- else }}
             <h1 class="mb-2 text-4xl font-extrabold {{ $textClass }}">
               {{ site.Title }}

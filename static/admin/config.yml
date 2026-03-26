@@ -275,3 +275,12 @@ collections:
             widget: image
             required: false
             hint: "Fundo para os layouts Hero e Background (usado quando o último artigo não tem imagem)"
+
+          - label: Estilo da Galeria (Homepage)
+            name: homepage_gallery_style
+            widget: select
+            options:
+              - { label: "Cards (grelha)", value: cards }
+              - { label: "Lista", value: list }
+            default: cards
+            hint: "Como os artigos recentes aparecem na página inicial"

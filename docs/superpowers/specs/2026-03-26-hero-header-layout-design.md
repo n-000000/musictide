@@ -26,7 +26,7 @@ The hero image container gets `aspect-ratio: 16/9`. It scales with the hero widt
 The outer hero container (`<div class="relative shadow-xl">`) becomes a single `<a href="{{ $latest.Permalink }}">`. The nested `<a>` around the title is removed (nested anchors are invalid HTML and redundant). Browsers natively cancel click events when a touch gesture moves beyond scroll threshold — no custom JS required.
 
 ### 1.5 Layout: badge above title, both flush-left, bottom-anchored
-- Content is anchored to the bottom-left of the hero frame (`items-end justify-end` or `absolute bottom-0 left-0`)
+- Content is anchored to the bottom-left of the hero frame: inner content div uses `absolute bottom-0 left-0` (or flex container with `justify-end items-start`)
 - Event badge and title are stacked vertically, left-aligned flush
 - Both use the heading font (inherits from theme global style — no hardcoded font-family)
 - Badge: primary-500 background, same font-family as title, uppercase, tight letter-spacing
@@ -61,19 +61,19 @@ New field `homepage_gallery_style` in `data/style.yaml` (default: `cards`). Opti
 
 In `layouts/partials/home/hero.html`, the recent articles section checks this value:
 - `cards` → existing card grid (`article-link/card.html`)
-- `list` → Blowfish list partial (`article-link/simple.html` or equivalent)
+- `list` → Blowfish list partial (`article-link/simple.html`)
 
 CMS field added to `static/admin/config.yml` under the Estilo Visual file collection, as a select widget with two options.
 
 ### 3.2 CMS toggle: posts listing page style
 New field `posts_listing_style` in `data/style.yaml` (default: `cards`). Options: `cards` | `list`.
 
-New override at `layouts/posts/list.html` (or `layouts/_default/list.html` scoped to posts) that reads `hugo.Data.style.posts_listing_style` and passes the appropriate `showCards` value to Blowfish's list rendering. This replaces the static `list.showCards` in `params.yaml` for the posts section.
+New override at `layouts/posts/list.html` that reads `hugo.Data.style.posts_listing_style` and sets the `cardView` variable accordingly (Blowfish's `_default/list.html` switches between `article-link/card.html` and `article-link/simple.html` based on `cardView`, not `showCards`). The override copies the relevant section of Blowfish's `_default/list.html` and replaces the `$cardView` assignment with a read from `hugo.Data.style`.
 
 CMS field added alongside 3.1 in `static/admin/config.yml`.
 
 ### 3.3 Global border-radius: 0
-Replace the existing card-specific `border-radius: 0 !important` rule in `extend-head.html` with a global reset:
+Replace the existing card-specific `border-radius: 0 !important` rule in `extend-head.html` (remove the `.article-link--card` targeted rule) with a global reset:
 
 ```css
 *, *::before, *::after {

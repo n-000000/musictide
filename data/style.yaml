@@ -3,5 +3,5 @@ heading_font: bebas-neue
 body_font: lato
 homepage_layout: hero
 homepage_image: ''
-homepage_gallery_style: cards-wide
-posts_listing_style: cards-wide
+homepage_gallery_style: cards
+posts_listing_style: cards

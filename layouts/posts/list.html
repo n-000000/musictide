@@ -43,14 +43,18 @@
   {{/* Article Grid */}}
   {{ if gt .Pages 0 }}
     {{- $siteStyle := hugo.Data.style -}}
-    {{- $postsStyle := $siteStyle.posts_listing_style | default "cards-wide" -}}
-    {{ $cardView := ne $postsStyle "list" }}
-    {{ $cardViewScreenWidth := eq $postsStyle "cards-wide" }}
+    {{- $contentStyle := $siteStyle.content_style | default "cards-wide" -}}
+    {{ $cardView := or (eq $contentStyle "cards") (eq $contentStyle "cards-wide") }}
+    {{ $cardViewScreenWidth := eq $contentStyle "cards-wide" }}
+    {{- $listScreenWidth := eq $contentStyle "list-wide" -}}
     {{ $groupByYear := .Params.groupByYear | default (site.Params.list.groupByYear | default false) }}
     {{ $orderByWeight := .Params.orderByWeight | default (site.Params.list.orderByWeight | default false) }}
     {{ $groupByYear := and (not $orderByWeight) $groupByYear }}
 
     {{ if not $cardView }}
+      {{- if $listScreenWidth }}
+      <div class="relative w-screen max-w-[1600px] px-[30px] start-[calc(max(-50vw,-800px)+50%)]">
+      {{- end }}
       <section class="space-y-10 w-full">
         {{ if not $orderByWeight }}
           {{ range (.Paginate (.Pages.GroupByDate "2006")).PageGroups }}
@@ -69,6 +73,9 @@
           {{ end }}
         {{ end }}
       </section>
+      {{- if $listScreenWidth }}
+      </div>
+      {{- end }}
     {{/* else: is cardView */}}
     {{ else }}
       {{ if $groupByYear }}

@@ -276,22 +276,13 @@ collections:
             required: false
             hint: "Fundo para os layouts Hero e Background (usado quando o último artigo não tem imagem)"
 
-          - label: Estilo da Galeria (Homepage)
-            name: homepage_gallery_style
+          - label: Estilo de Apresentação do Conteudo
+            name: content_style
             widget: select
             options:
               - { label: "Cards largura total", value: cards-wide }
               - { label: "Cards (grelha)", value: cards }
+              - { label: "Lista largura total", value: list-wide }
               - { label: "Lista", value: list }
             default: cards-wide
-            hint: "Como os artigos recentes aparecem na página inicial"
-
-          - label: Estilo da Listagem de Artigos
-            name: posts_listing_style
-            widget: select
-            options:
-              - { label: "Cards largura total", value: cards-wide }
-              - { label: "Cards (grelha)", value: cards }
-              - { label: "Lista", value: list }
-            default: cards-wide
-            hint: "Como os artigos aparecem na página /posts/"
+            hint: "Controla o estilo de apresentação em todas as páginas: hero, galeria e listagens"

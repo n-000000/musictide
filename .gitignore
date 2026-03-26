@@ -1,6 +1,9 @@
 # Worktrees
 .worktrees/
 
+# Brainstorm session files
+.superpowers/
+
 # Playwright MCP debug output
 .playwright-mcp/
 

@@ -52,26 +52,10 @@
   h1, h2, h3, h4, h5, h6 { font-family: {{ $hf.stack }}; }
   {{- end }}
 
-  /* ── Hero — full-viewport editorial layout ───────────────── */
-  .hero-home {
-    width: 100vw;
-    min-height: 100svh;
-    margin-left: calc(-50vw + 50%);
-  }
-
+  /* ── Hero text shadows ─────────────────────────────────────── */
   .hero-title {
-    font-size: clamp(2.8rem, 8vw, 6rem);
-    max-width: 16ch;
-    text-shadow:
-      0 2px 20px rgba(0,0,0,0.6),
-      0 0 60px rgba(0,0,0,0.3);
+    text-shadow: 0 2px 20px rgba(0,0,0,.6), 0 0 60px rgba(0,0,0,.3);
   }
-
-  .hero-cta:hover {
-    transform: translateX(4px);
-    filter: brightness(1.15);
-  }
-
   .hero-badge {
     text-shadow: none;
   }

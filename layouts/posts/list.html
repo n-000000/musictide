@@ -43,8 +43,9 @@
   {{/* Article Grid */}}
   {{ if gt .Pages 0 }}
     {{- $siteStyle := hugo.Data.style -}}
-    {{ $cardView := eq ($siteStyle.posts_listing_style | default "cards") "cards" }}
-    {{ $cardViewScreenWidth := .Params.cardViewScreenWidth | default (site.Params.list.cardViewScreenWidth | default false) }}
+    {{- $postsStyle := $siteStyle.posts_listing_style | default "cards-wide" -}}
+    {{ $cardView := ne $postsStyle "list" }}
+    {{ $cardViewScreenWidth := eq $postsStyle "cards-wide" }}
     {{ $groupByYear := .Params.groupByYear | default (site.Params.list.groupByYear | default false) }}
     {{ $orderByWeight := .Params.orderByWeight | default (site.Params.list.orderByWeight | default false) }}
     {{ $groupByYear := and (not $orderByWeight) $groupByYear }}

@@ -100,21 +100,27 @@
     {{- $remaining = where $remaining "Permalink" "ne" $latest.Permalink -}}
   {{- end -}}
   <h2 class="mt-8 text-2xl font-extrabold mb-10">{{ i18n "shortcode.recent_articles" | emojify }}</h2>
+  {{- if eq $galleryStyle "cards-wide" }}
   <div class="relative w-screen px-[30px]" style="max-width: 1600px; margin-left: calc(max(-50vw, -800px) + 50%);">
-    {{- if eq $galleryStyle "list" }}
-    <section class="space-y-10 w-full">
-      {{- range first $count $remaining -}}
-        {{ partial "article-link/simple.html" . }}
-      {{- end -}}
-    </section>
-    {{- else }}
     <section class="w-full grid gap-4 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
       {{- range first $count $remaining -}}
         {{ partial "article-link/card.html" . }}
       {{- end -}}
     </section>
-    {{- end }}
   </div>
+  {{- else if eq $galleryStyle "list" }}
+  <section class="space-y-10 w-full">
+    {{- range first $count $remaining -}}
+      {{ partial "article-link/simple.html" . }}
+    {{- end -}}
+  </section>
+  {{- else }}{{/* cards — within content bounds */}}
+  <section class="w-full grid gap-4 sm:grid-cols-2 md:grid-cols-3">
+    {{- range first $count $remaining -}}
+      {{ partial "article-link/card.html" . }}
+    {{- end -}}
+  </section>
+  {{- end }}
   {{- if .Site.Params.homepage.showMoreLink | default false }}
   <div class="mt-10 flex justify-center">
     <a href="{{ (.Site.Params.homepage.showMoreLinkDest | default "/posts/") | relLangURL }}">

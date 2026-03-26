@@ -284,3 +284,12 @@ collections:
               - { label: "Lista", value: list }
             default: cards
             hint: "Como os artigos recentes aparecem na página inicial"
+
+          - label: Estilo da Listagem de Artigos
+            name: posts_listing_style
+            widget: select
+            options:
+              - { label: "Cards (grelha)", value: cards }
+              - { label: "Lista", value: list }
+            default: cards
+            hint: "Como os artigos aparecem na página /posts/"

@@ -100,10 +100,20 @@
     display: none !important;
   }
 
-  /* ── Fixed header transparency ───────────────────────────── */
+  /* ── Fixed header transparency + alignment ───────────────── */
   header nav,
   header > div {
     background: transparent !important;
+  }
+
+  header > div,
+  header nav > div {
+    max-width: 1600px !important;
+    padding-left: 30px !important;
+    padding-right: 30px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    box-sizing: border-box;
   }
 
   /* ── Article gallery ─────────────────────────────────────── */

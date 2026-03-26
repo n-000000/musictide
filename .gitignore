@@ -25,3 +25,9 @@ hugo.linux
 # Cloudflare Workers
 workers/**/node_modules
 workers/**/.wrangler
+
+# Blowfish docs
+docs/blowfish/*
+
+# Hugo docs
+docs/hugo/*

@@ -44,13 +44,13 @@
     {{- if $latest }}
 
       {{- with $latest.Params.event }}
-      <span class="hero-badge mb-4 inline-block text-xs font-bold uppercase px-3 py-1.5 text-neutral-100"
+      <span class="hero-badge mb-4 inline-block text-sm font-bold uppercase px-4 py-1.5 text-white"
             style="letter-spacing: 0.2em; background: rgb(var(--color-primary-500));">
         {{ . }}
       </span>
       {{- end }}
 
-      <h1 class="hero-title mb-6 font-extrabold leading-none tracking-tight text-white">
+      <h1 class="hero-title mb-6 font-extrabold tracking-tight text-white" style="line-height: 1.05;">
         <a href="{{ $latest.Permalink }}" class="no-underline text-white hover:text-neutral-200 transition-colors duration-300">
           {{ $latest.Title }}
         </a>

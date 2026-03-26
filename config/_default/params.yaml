@@ -21,6 +21,8 @@ homepage:
   showRecent: true
   showRecentItems: 9
   cardView: true
+  cardViewScreenWidth: true
+  layoutBackgroundBlur: true
   showMoreLink: true
   showMoreLinkDest: /posts/
 

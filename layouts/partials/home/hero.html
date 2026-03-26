@@ -45,7 +45,12 @@
   <div class="relative">
     <div class="absolute inset-x-0 bottom-0 h-1/2"></div>
     <div class="relative w-screen px-[30px]" style="max-width: 1600px; margin-left: calc(max(-50vw, -800px) + 50%);">
-      <div class="relative shadow-xl sm:overflow-hidden">
+      {{- /* Hero container: <a> when latest exists, <div> fallback */ -}}
+      {{- if $latest }}
+      <a href="{{ $latest.Permalink }}" class="block relative no-underline shadow-xl" style="aspect-ratio:16/9;overflow:hidden;">
+      {{- else }}
+      <div class="relative shadow-xl" style="aspect-ratio:16/9;overflow:hidden;">
+      {{- end }}
 
         {{- /* Hero background image (article featureimage) */ -}}
         {{- if $heroURL }}
@@ -60,29 +65,27 @@
         <div class="absolute inset-0" style="background:radial-gradient(ellipse at center,transparent 40%,rgba(0,0,0,.35) 100%)"></div>
         {{- end }}
 
-        <div class="relative px-4 py-16 sm:px-6 sm:py-24 lg:py-32 lg:px-8 flex flex-col items-center justify-center text-center">
+        <div class="absolute inset-0 flex flex-col justify-end items-start p-8 sm:p-12 lg:p-16">
           {{- if $latest }}
 
             {{- with $latest.Params.event }}
-            <span class="mb-3 inline-block text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-none bg-primary-500 text-neutral-100 hero-badge">
+            <span class="mb-2 inline-block text-sm font-bold uppercase tracking-widest px-3 py-1 bg-primary-500 text-neutral-100 hero-badge">
               {{ . }}
             </span>
             {{- end }}
 
-            <h1 class="mb-4 text-4xl font-extrabold leading-tight max-w-3xl hero-title {{ $textClass }}">
-              <a href="{{ $latest.Permalink }}" class="no-underline {{ $textClass }}">
-                {{ $latest.Title }}
-              </a>
+            <h1 class="text-5xl sm:text-6xl lg:text-7xl font-extrabold leading-none hero-title {{ $textClass }}">
+              {{ $latest.Title }}
             </h1>
 
           {{- else }}
-            <h1 class="mb-2 text-4xl font-extrabold {{ $textClass }}">
+            <h1 class="text-4xl font-extrabold {{ $textClass }}">
               {{ site.Title }}
             </h1>
           {{- end }}
         </div>
 
-      </div>
+      {{- if $latest }}</a>{{- else }}</div>{{- end }}
     </div>
   </div>
 </article>

@@ -6,6 +6,7 @@ featureimage: https://pub-576ea11202f543d0bf28d36ef63d18ff.r2.dev/posts/2026/03/
 featureimagecaption: Fu Machu @ SonicBlast 2026
 author: Nuno
 gallery:
+  - https://pub-576ea11202f543d0bf28d36ef63d18ff.r2.dev/posts/2026/03/28/Fu_Manchu_King_of_the_road.mp4
   - https://pub-576ea11202f543d0bf28d36ef63d18ff.r2.dev/posts/2026/03/24/50078-psychedelic-colorful-turtle-Windows_7.jpg
   - https://pub-576ea11202f543d0bf28d36ef63d18ff.r2.dev/posts/2026/03/24/simonstalenhag.jpg
 draft: false

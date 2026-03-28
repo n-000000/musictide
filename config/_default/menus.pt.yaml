@@ -1,1 +1,4 @@
-# Menu entries for Portuguese — populated in a later phase
+main:
+  - name: Colaboradores
+    url: /authors/
+    weight: 30

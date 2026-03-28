@@ -90,15 +90,6 @@ html {
                0 0 60px rgba(0, 0, 0, 0.3);
 }
 
-@media (min-width: 640px) {
-  .hero-content { padding: 3rem; }
-  .hero-title   { font-size: 3.75rem; }
-}
-@media (min-width: 1024px) {
-  .hero-content { padding: 4rem; }
-  .hero-title   { font-size: 4.5rem; }
-}
-
 /* ═══════════════════════════════════════════════════════════
    ARTICLE HERO — zoomable feature image (big.html)
    ═══════════════════════════════════════════════════════════ */
@@ -162,12 +153,8 @@ html {
    ARTICLE GALLERY (masonry grid)
    ═══════════════════════════════════════════════════════════ */
 .mt-gallery {
-  columns: 2;
+  columns: 1;
   column-gap: 0.5rem;
-}
-
-@media (min-width: 1024px) {
-  .mt-gallery { columns: 3; }
 }
 
 .mt-gallery > div {
@@ -204,4 +191,19 @@ header > div {
 /* Hide language switcher (no EN content yet) */
 .translation {
   display: none !important;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   RESPONSIVE DESIGN - handlres
+   ═══════════════════════════════════════════════════════════ */
+
+@media (min-width: 640px) {
+  .hero-content { padding: 3rem; }
+  .hero-title   { font-size: 3.75rem; }
+  .mt-gallery   { columns: 2; }
+}
+@media (min-width: 1024px) {
+  .hero-content { padding: 4rem; }
+  .hero-title   { font-size: 4.5rem; }
+  .mt-gallery   { columns: 3; }
 }

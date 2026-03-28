@@ -180,7 +180,61 @@ collections:
         name: instagram
         widget: string
         required: false
-        hint: "Só o handle, sem @ (ex: musictide_pt)"
+        hint: "URL completo do perfil (ex: https://instagram.com/musictide_pt)"
+
+      - label: Facebook
+        name: facebook
+        widget: string
+        required: false
+        hint: "URL completo do perfil (ex: https://facebook.com/musictide)"
+
+      - label: X / Twitter
+        name: x_twitter
+        widget: string
+        required: false
+        hint: "URL completo do perfil (ex: https://x.com/musictide)"
+
+      - label: Bluesky
+        name: bluesky
+        widget: string
+        required: false
+        hint: "URL completo do perfil (ex: https://bsky.app/profile/musictide.bsky.social)"
+
+      - label: Mastodon
+        name: mastodon
+        widget: string
+        required: false
+        hint: "URL completo do perfil (ex: https://mastodon.social/@musictide)"
+
+      - label: Threads
+        name: threads
+        widget: string
+        required: false
+        hint: "URL completo do perfil (ex: https://www.threads.net/@musictide)"
+
+      - label: TikTok
+        name: tiktok
+        widget: string
+        required: false
+        hint: "URL completo do perfil (ex: https://www.tiktok.com/@musictide)"
+
+      - label: YouTube
+        name: youtube
+        widget: string
+        required: false
+        hint: "URL completo do canal (ex: https://youtube.com/@musictide)"
+
+      - label: SoundCloud
+        name: soundcloud
+        widget: string
+        required: false
+        hint: "URL completo do perfil (ex: https://soundcloud.com/musictide)"
+
+      - label: Spotify
+        name: spotify
+        widget: string
+        required: false
+        hint: "URL do perfil de artista ou playlist (ex: https://open.spotify.com/artist/...)"
 
       - label: Rascunho
         name: draft

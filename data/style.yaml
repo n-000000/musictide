@@ -1,3 +1,5 @@
+site_name: ''
+show_theme_toggle: true
 colorScheme: slate
 heading_font: bebas-neue
 body_font: lato

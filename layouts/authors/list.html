@@ -37,48 +37,39 @@
                 </a>
               {{ end }}
               {{ with .Params.instagram }}
-                <a href="{{ . }}" target="_blank" rel="noopener noreferrer" title="Instagram">
+                {{ $url := cond (strings.HasPrefix . "http") . (printf "https://instagram.com/%s" (strings.TrimPrefix . "@")) }}
+                <a href="{{ $url }}" target="_blank" rel="noopener noreferrer" title="Instagram">
                   {{ partial "icon.html" "instagram" }}
                 </a>
               {{ end }}
               {{ with .Params.facebook }}
-                <a href="{{ . }}" target="_blank" rel="noopener noreferrer" title="Facebook">
+                {{ $url := cond (strings.HasPrefix . "http") . (printf "https://facebook.com/%s" (strings.TrimPrefix . "@")) }}
+                <a href="{{ $url }}" target="_blank" rel="noopener noreferrer" title="Facebook">
                   {{ partial "icon.html" "facebook" }}
                 </a>
               {{ end }}
               {{ with .Params.x_twitter }}
-                <a href="{{ . }}" target="_blank" rel="noopener noreferrer" title="X / Twitter">
+                {{ $url := cond (strings.HasPrefix . "http") . (printf "https://x.com/%s" (strings.TrimPrefix . "@")) }}
+                <a href="{{ $url }}" target="_blank" rel="noopener noreferrer" title="X / Twitter">
                   {{ partial "icon.html" "x-twitter" }}
                 </a>
               {{ end }}
               {{ with .Params.bluesky }}
-                <a href="{{ . }}" target="_blank" rel="noopener noreferrer" title="Bluesky">
+                {{ $url := cond (strings.HasPrefix . "http") . (printf "https://bsky.app/profile/%s" (strings.TrimPrefix . "@")) }}
+                <a href="{{ $url }}" target="_blank" rel="noopener noreferrer" title="Bluesky">
                   {{ partial "icon.html" "bluesky" }}
                 </a>
               {{ end }}
-              {{ with .Params.mastodon }}
-                <a href="{{ . }}" target="_blank" rel="noopener noreferrer" title="Mastodon">
-                  {{ partial "icon.html" "mastodon" }}
-                </a>
-              {{ end }}
-              {{ with .Params.threads }}
-                <a href="{{ . }}" target="_blank" rel="noopener noreferrer" title="Threads">
-                  {{ partial "icon.html" "threads" }}
-                </a>
-              {{ end }}
               {{ with .Params.tiktok }}
-                <a href="{{ . }}" target="_blank" rel="noopener noreferrer" title="TikTok">
+                {{ $url := cond (strings.HasPrefix . "http") . (printf "https://www.tiktok.com/@%s" (strings.TrimPrefix . "@")) }}
+                <a href="{{ $url }}" target="_blank" rel="noopener noreferrer" title="TikTok">
                   {{ partial "icon.html" "tiktok" }}
                 </a>
               {{ end }}
               {{ with .Params.youtube }}
-                <a href="{{ . }}" target="_blank" rel="noopener noreferrer" title="YouTube">
+                {{ $url := cond (strings.HasPrefix . "http") . (printf "https://youtube.com/@%s" (strings.TrimPrefix . "@")) }}
+                <a href="{{ $url }}" target="_blank" rel="noopener noreferrer" title="YouTube">
                   {{ partial "icon.html" "youtube" }}
-                </a>
-              {{ end }}
-              {{ with .Params.soundcloud }}
-                <a href="{{ . }}" target="_blank" rel="noopener noreferrer" title="SoundCloud">
-                  {{ partial "icon.html" "soundcloud" }}
                 </a>
               {{ end }}
               {{ with .Params.spotify }}

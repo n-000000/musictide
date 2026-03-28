@@ -1,36 +1,65 @@
 /* musictide.css — static site-wide styles
    Loaded by extend-head.html via Hugo asset pipeline (minified + fingerprinted).
-   Dynamic/conditional rules (fonts, $isWide layout) live in extend-head.html. */
+   Dynamic/conditional rules (fonts, wide layout) live in extend-head.html. */
 
+/* ── Layout tokens ───────────────────────────────────────── */
 :root {
   --mt-max-width: 1600px;
   --mt-gutter: 30px;
 }
 
 /* ── Global zero border-radius ───────────────────────────── */
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   border-radius: 0 !important;
 }
 
-/* ── Hero image utilities ────────────────────────────────── */
+/* ── Utility: flush image (no margin from prose) ─────────── */
+.mt-img-flush {
+  margin: 0;
+}
+
+/* ── Smooth scroll ───────────────────────────────────────── */
+html {
+  scroll-behavior: smooth;
+}
+
+/* ── View Transitions ────────────────────────────────────── */
+@view-transition {
+  navigation: auto;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   HERO — shared between homepage and article
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Hero frame (homepage: clickable card, 16:9) ─────────── */
 .mt-hero-frame {
   aspect-ratio: 16 / 9;
   overflow: hidden;
 }
 
-.mt-img-flush { margin: 0; }
-
+/* ── Hero overlays ───────────────────────────────────────── */
 .mt-hero-grad {
-  background: linear-gradient(to top, rgba(0,0,0,.88) 0%, rgba(0,0,0,.5) 40%, rgba(0,0,0,.15) 70%, transparent 100%);
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.88) 0%,
+    rgba(0, 0, 0, 0.50) 40%,
+    rgba(0, 0, 0, 0.15) 70%,
+    transparent 100%
+  );
 }
 
 .mt-hero-vignette {
-  background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,.35) 100%);
+  background: radial-gradient(
+    ellipse at center,
+    transparent 40%,
+    rgba(0, 0, 0, 0.35) 100%
+  );
 }
 
-/* ── Hero layout + typography ────────────────────────────── */
-/* Tailwind utilities for justify-end/items-start/text-5xl+ are absent
-   from Blowfish's pre-compiled bundle — defined here instead. */
+/* ── Hero text content ───────────────────────────────────── */
 .hero-content {
   position: absolute;
   inset: 0;
@@ -40,8 +69,6 @@
   align-items: flex-start;
   padding: 2rem;
 }
-/* @media (min-width: 640px)  { .hero-content { padding: 3rem; } } */
-/* @media (min-width: 1024px) { .hero-content { padding: 4rem; } } */
 
 .hero-badge {
   display: inline-block;
@@ -59,19 +86,98 @@
   font-weight: 800;
   line-height: 1;
   margin: 0;
-  text-shadow: 0 2px 20px rgba(0,0,0,.6), 0 0 60px rgba(0,0,0,.3);
+  text-shadow: 0 2px 20px rgba(0, 0, 0, 0.6),
+               0 0 60px rgba(0, 0, 0, 0.3);
 }
 
-@media (min-width: 640px)  { 
+@media (min-width: 640px) {
   .hero-content { padding: 3rem; }
-  .hero-title { font-size: 3.75rem; } 
+  .hero-title   { font-size: 3.75rem; }
 }
-@media (min-width: 1024px) { 
+@media (min-width: 1024px) {
   .hero-content { padding: 4rem; }
-  .hero-title { font-size: 4.5rem; } 
+  .hero-title   { font-size: 4.5rem; }
 }
 
-/* ── Film grain overlay — SVG noise, pure CSS, mobile-safe ── */
+/* ═══════════════════════════════════════════════════════════
+   ARTICLE HERO — zoomable feature image (big.html)
+   ═══════════════════════════════════════════════════════════ */
+
+.mt-hero-figure {
+  margin: 0;
+}
+
+.mt-hero-article {
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  width: 100%;
+  height: auto;
+  max-height: none;
+  display: block;
+}
+
+/* ── Zoom centering fix ──────────────────────────────────── */
+/* medium-zoom adds this class during the open transition.
+   We must release the forced aspect-ratio and cover-crop so the
+   library can position the full image centered in the viewport. */
+.mt-hero-article.medium-zoom-image--opened {
+  aspect-ratio: auto;
+  object-fit: contain;
+  max-height: 100vh;
+  max-width: 100vw;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   CARDS
+   ═══════════════════════════════════════════════════════════ */
+.article-link--card {
+  border-color: rgba(var(--color-neutral-600), 0.4) !important;
+  transition: transform 0.25s ease,
+              border-color 0.25s ease,
+              box-shadow 0.25s ease;
+}
+
+.article-link--card:hover {
+  transform: translateY(-3px);
+  border-color: rgb(var(--color-primary-500)) !important;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3),
+              0 0 0 1px rgba(var(--color-primary-500), 0.2);
+}
+
+.article-link--card .thumbnail_card {
+  transition: filter 0.3s ease;
+}
+
+.article-link--card:hover .thumbnail_card {
+  filter: brightness(1.08) contrast(1.05);
+}
+
+/* Tag pills — tighter spacing */
+.article-link--card a[href^="/tags/"] span {
+  font-size: 0.65rem;
+  padding: 0.15rem 0.45rem;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ARTICLE GALLERY (masonry grid)
+   ═══════════════════════════════════════════════════════════ */
+.mt-gallery {
+  columns: 2;
+  column-gap: 0.5rem;
+}
+
+@media (min-width: 1024px) {
+  .mt-gallery { columns: 3; }
+}
+
+.mt-gallery > div {
+  break-inside: avoid;
+  margin-bottom: 0.5rem;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   FILM GRAIN OVERLAY — SVG noise, pure CSS
+   ═══════════════════════════════════════════════════════════ */
 body::after {
   content: '';
   position: fixed;
@@ -85,81 +191,17 @@ body::after {
   mix-blend-mode: overlay;
 }
 
-/* ── Cards — sharper, meaner ─────────────────────────────── */
-.article-link--card {
-  border-color: rgba(var(--color-neutral-600), 0.4) !important;
-  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
-}
+/* ═══════════════════════════════════════════════════════════
+   CHROME — header, language switcher
+   ═══════════════════════════════════════════════════════════ */
 
-.article-link--card:hover {
-  transform: translateY(-3px);
-  border-color: rgb(var(--color-primary-500)) !important;
-  box-shadow: 0 8px 30px rgba(0,0,0,0.3), 0 0 0 1px rgba(var(--color-primary-500), 0.2);
-}
-
-.article-link--card .thumbnail_card {
-  transition: filter 0.3s ease;
-}
-
-.article-link--card:hover .thumbnail_card {
-  filter: brightness(1.08) contrast(1.05);
-}
-
-/* ── Tag pills — tighter, more compact ───────────────────── */
-.article-link--card a[href^="/tags/"] span {
-  font-size: 0.65rem;
-  padding: 0.15rem 0.45rem;
-}
-
-/* ── Article gallery ─────────────────────────────────────── */
-.mt-gallery {
-  columns: 1;
-  column-gap: 0.5rem;
-}
-  .mt-gallery { columns: 2; } 
-@media (min-width: 640px)  { 
-  .mt-gallery { columns: 2; } 
-}
-@media (min-width: 1024px) { 
-  .mt-gallery { columns: 3; } 
-}
-.mt-gallery > div {
-  break-inside: avoid;
-  margin-bottom: 0.5rem;
-}
-
-/* ── Hide language switcher (no EN content yet) ──────────── */
-.translation {
-  display: none !important;
-}
-
-/* ── Fixed header transparency ───────────────────────────── */
+/* Transparent fixed header */
 header nav,
 header > div {
   background: transparent !important;
 }
 
-/* ── View Transitions ────────────────────────────────────── */
-@view-transition {
-  navigation: auto;
-}
-
-/* ── Smooth scroll ───────────────────────────────────────── */
-html {
-  scroll-behavior: smooth;
-}
-
-/* ── Article hero image — natural proportions ───────────── */
-figure:has(.single_hero_round) {
-  margin: 0;
-}
-
-/* figure .single_hero_round, */
-.single_hero_round {
-  aspect-ratio: 16 / 9 !important;
-  object-fit: cover !important;
-  width: 100% !important;
-  height: auto !important;
-  max-height: none !important;
-  display: block;
+/* Hide language switcher (no EN content yet) */
+.translation {
+  display: none !important;
 }

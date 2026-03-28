@@ -1,58 +1,25 @@
-{{/* Used by
-  1. list.html and term.html (when the cardView option is enabled)
-  2. Recent articles template (when the cardView option is enabled)
-  3. Shortcode list.html
-*/}}
-{{ $disableImageOptimization := site.Store.Get "disableImageOptimization" }}
+{{- /*
+  article-link/card.html — card component for list/grid views.
 
-{{ $page := .Page }}
-{{ $featured := "" }}
-{{ $featuredURL := "" }}
-{{ if not .Params.hideFeatureImage }}
-  {{/* frontmatter */}}
-  {{ with $page }}
-    {{ with .Params.featureimage }}
-      {{ if or (strings.HasPrefix . "http:") (strings.HasPrefix . "https:") }}
-        {{ if site.Params.hotlinkFeatureImage }}
-          {{ $featuredURL = . }}
-        {{ else }}
-          {{ $featured = resources.GetRemote . }}
-        {{ end }}
-      {{ else }}
-        {{ $featured = resources.Get . }}
-      {{ end }}
-    {{ end }}
+  Used by:
+    1. list.html / term.html (cardView option)
+    2. Recent articles (cardView option)
+    3. Shortcode list.html
+*/ -}}
 
-    {{/* page resources */}}
-    {{ if not (or $featured $featuredURL) }}
-      {{ $images := .Resources.ByType "image" }}
-      {{ range slice "*feature*" "*cover*" "*thumbnail*" }}
-        {{ if not $featured }}{{ $featured = $images.GetMatch . }}{{ end }}
-      {{ end }}
-    {{ end }}
+{{- $page := .Page -}}
 
-    {{/* fallback to default */}}
-    {{ if not (or $featured $featuredURL) }}
-      {{ $default := site.Store.Get "defaultFeaturedImage" }}
-      {{ if $default.url }}
-        {{ $featuredURL = $default.url }}
-      {{ else if $default.obj }}
-        {{ $featured = $default.obj }}
-      {{ end }}
-    {{ end }}
-
-    {{/* generate image URL if not hotlink */}}
-    {{ if not $featuredURL }}
-      {{ with $featured }}
-        {{ $featuredURL = .RelPermalink }}
-        {{ if not (or $disableImageOptimization (eq .MediaType.SubType "svg")) }}
-          {{ $featuredURL = (.Resize "600x").RelPermalink }}
-        {{ end }}
-      {{ end }}
-    {{ end }}
-  {{ end }}
-{{ end }}
-
+{{- /* Resolve featured image via shared partial */ -}}
+{{- $featuredURL := "" -}}
+{{- if not .Params.hideFeatureImage -}}
+  {{- $img := partial "resolve-feature-image.html" (dict
+    "Page"       $page
+    "Globs"      (slice "*feature*" "*cover*" "*thumbnail*")
+    "DefaultKey" "defaultFeaturedImage"
+    "Resize"     "600x"
+  ) -}}
+  {{- $featuredURL = $img.URL -}}
+{{- end -}}
 
 <article
   class="article-link--card relative min-h-full min-w-full overflow-hidden rounded-lg border border-neutral-300 dark:border-neutral-600">

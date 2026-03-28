@@ -1,38 +1,40 @@
 {{- /*
-  home/hero.html — musictide homepage.
-  Hero section: latest article's featureimage as hero-only background.
-  Page background: homepage_image from data/style.yaml (fixed, with blur on scroll).
-  Cards via Blowfish partial.
+  home/hero.html — musictide homepage layout.
+
+  Two distinct images:
+    1. Hero (foreground)  — latest article's featureimage, clickable.
+    2. Page bg (fixed)    — homepage_image from data/style.yaml.
+
+  Cards grid below the hero, excluding the featured article.
 */ -}}
-{{- $siteStyle := hugo.Data.style -}}
+{{- $siteStyle   := hugo.Data.style -}}
 {{- $contentStyle := $siteStyle.content_style | default "cards-wide" -}}
 {{- $isWide  := or (eq $contentStyle "cards-wide") (eq $contentStyle "list-wide") -}}
 {{- $isCards := or (eq $contentStyle "cards")      (eq $contentStyle "cards-wide") -}}
 
 {{- /* Latest non-draft post */ -}}
-{{- $posts := where (where site.RegularPages "Section" "posts") ".Params.draft" "ne" true -}}
-{{- $posts = $posts.ByDate.Reverse -}}
+{{- $posts  := where (where site.RegularPages "Section" "posts") ".Params.draft" "ne" true -}}
+{{- $posts   = $posts.ByDate.Reverse -}}
 {{- $latest := index $posts 0 -}}
 
-{{- /* Two separate image URLs */ -}}
+{{- /* Resolve hero image via shared partial */ -}}
 {{- $heroURL := "" -}}
 {{- if $latest -}}
-  {{- with $latest.Params.featureimage -}}
-    {{- $heroURL = . -}}
-  {{- end -}}
+  {{- $img := partial "resolve-feature-image.html" (dict
+    "Page"  $latest
+    "Globs" (slice "*feature*" "*cover*" "*thumbnail*")
+  ) -}}
+  {{- $heroURL = $img.URL -}}
 {{- end -}}
+
 {{- $pageBgURL := $siteStyle.homepage_image | default "" -}}
 
-{{- /* Hero text color — light by default (most concert photos are dark) */ -}}
-{{- $textClass   := "text-neutral-100" -}}
-{{- $strokeClass := "hero-stroke-dark" -}}
-
-{{- /* Fixed page background — stays behind everything */ -}}
+{{- /* ── Fixed page background ───────────────────────────────── */ -}}
 {{- if $pageBgURL }}
 <div class="fixed inset-x-0 top-0 -z-10">
   <img
     id="background-image"
-    class="nozoom h-[1000px] w-full object-cover mt-img-flush"
+    class="nozoom mt-img-flush h-[1000px] w-full object-cover"
     src="{{ $pageBgURL }}"
     role="presentation">
   <div
@@ -42,7 +44,7 @@
 </div>
 {{- end }}
 
-{{- /* Hero content — article featureimage as hero-only background */ -}}
+{{- /* ── Hero — latest article featureimage ───────────────────── */ -}}
 <article class="max-w-full">
   <div class="relative">
     <div class="absolute inset-x-0 bottom-0 h-1/2"></div>
@@ -51,21 +53,19 @@
     {{- else }}
     <div>
     {{- end }}
-      {{- /* Hero container: <a> when latest exists, <div> fallback */ -}}
+
       {{- if $latest }}
       <a href="{{ $latest.Permalink }}" class="mt-hero-frame block relative no-underline shadow-xl">
       {{- else }}
       <div class="mt-hero-frame block relative shadow-xl">
       {{- end }}
 
-        {{- /* Hero background image (article featureimage) */ -}}
         {{- if $heroURL }}
         <div class="absolute inset-0">
           <img
-            class="nozoom h-full w-full object-cover"
+            class="nozoom mt-img-flush h-full w-full object-cover"
             src="{{ $heroURL }}"
-            role="presentation"
-            class="mt-img-flush">
+            role="presentation">
         </div>
         <div class="mt-hero-grad absolute inset-0"></div>
         <div class="mt-hero-vignette absolute inset-0"></div>
@@ -73,19 +73,16 @@
 
         <div class="hero-content">
           {{- if $latest }}
-
             {{- with $latest.Params.event }}
             <span class="bg-primary-500 text-neutral-100 hero-badge">
               {{ . }}
             </span>
             {{- end }}
-
-            <h1 class="hero-title {{ $textClass }}">
+            <h1 class="hero-title text-neutral-100">
               {{ $latest.Title }}
             </h1>
-
           {{- else }}
-            <h1 class="text-4xl font-extrabold {{ $textClass }}">
+            <h1 class="hero-title text-neutral-100">
               {{ site.Title }}
             </h1>
           {{- end }}
@@ -96,18 +93,20 @@
   </div>
 </article>
 
-{{- /* Recent articles — screen-width card grid, hero article excluded */ -}}
+{{- /* ── Recent articles grid ────────────────────────────────── */ -}}
 {{- if .Site.Params.homepage.showRecent | default false -}}
-  {{- $count := .Site.Params.homepage.showRecentItems | default 5 -}}
+  {{- $count        := .Site.Params.homepage.showRecentItems | default 5 -}}
   {{- $mainSections := .Site.Params.mainSections | default (slice "posts") -}}
-  {{- $remaining := where site.RegularPages "Type" "in" $mainSections -}}
+  {{- $remaining    := where site.RegularPages "Type" "in" $mainSections -}}
   {{- if $latest -}}
     {{- $remaining = where $remaining "Permalink" "ne" $latest.Permalink -}}
   {{- end -}}
+
   {{- if $isWide }}
   <div class="mt-wide mt-breakout">
   {{- end }}
   <h2 class="mt-8 text-2xl font-extrabold mb-10">{{ i18n "shortcode.recent_articles" | emojify }}</h2>
+
   {{- if $isCards }}
   <section class="w-full grid gap-4 sm:grid-cols-2 md:grid-cols-3{{- if $isWide }} xl:grid-cols-4 2xl:grid-cols-5{{- end }}">
     {{- range first $count $remaining -}}
@@ -121,9 +120,11 @@
     {{- end -}}
   </section>
   {{- end }}
+
   {{- if $isWide }}
   </div>
   {{- end }}
+
   {{- if .Site.Params.homepage.showMoreLink | default false }}
   <div class="mt-10 flex justify-center">
     <a href="{{ (.Site.Params.homepage.showMoreLinkDest | default "/posts/") | relLangURL }}">
@@ -136,7 +137,7 @@
   {{- end }}
 {{- end -}}
 
-{{- /* Background blur overlay — scroll-triggered */ -}}
+{{- /* ── Background blur overlay ─────────────────────────────── */ -}}
 {{ if .Site.Params.homepage.layoutBackgroundBlur | default false }}
   <div
     id="background-blur"

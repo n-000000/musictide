@@ -3,7 +3,9 @@
  *
  * S3-compatible reverse proxy between Sveltia CMS and Cloudflare R2.
  *
- * - PutObject:       prepends YYYY/MM/DD/ to the key (based on current date)
+ * - POST /sign-upload: returns a presigned PUT URL for direct-to-R2 uploads
+ *                      (bypasses Worker body size limit for large files)
+ * - PutObject:       prepends {collection}/YYYY/MM/DD/ to the key
  * - ListObjectsV2:   returns objects from ±1 day only
  * - DeleteObject:    passes through
  * - HeadObject:      passes through
@@ -11,6 +13,8 @@
  * Auth: GitHub OAuth token forwarded from CMS, verified against repo push access.
  * No static secrets in client code.
  */
+
+import { AwsClient } from 'aws4fetch';
 
 const GITHUB_REPO = 'n-000000/musictide';
 
@@ -27,7 +31,7 @@ function corsHeaders(request) {
     origin.endsWith('.musictide.pages.dev');
   return {
     'Access-Control-Allow-Origin': allowed ? origin : ALLOWED_ORIGINS[0],
-    'Access-Control-Allow-Methods': 'GET, PUT, DELETE, HEAD, OPTIONS',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, HEAD, OPTIONS',
     'Access-Control-Allow-Headers':
       'Content-Type, Authorization, X-Collection, x-amz-content-sha256, x-amz-date, x-amz-user-agent, x-amz-acl',
     'Access-Control-Expose-Headers': 'ETag',
@@ -137,6 +141,11 @@ export default {
 
     const url = new URL(request.url);
 
+    // ── Presigned upload URL endpoint ──────────────────────────
+    if (request.method === 'POST' && url.pathname === '/sign-upload') {
+      return await handleSignUpload(request, env);
+    }
+
     // Path: /{bucket}/{key...} or /{bucket}?list-type=2
     const pathParts = url.pathname.slice(1).split('/');
     const key = decodeURIComponent(pathParts.slice(1).join('/'));
@@ -167,7 +176,58 @@ export default {
   },
 };
 
-/** PUT — upload with collection + date prefix. */
+/**
+ * POST /sign-upload — generate a presigned PUT URL for direct-to-R2 upload.
+ *
+ * Body: { key: "filename.mp4", contentType: "video/mp4", collection: "posts" }
+ * Returns: { url: "https://...presigned...", key: "posts/2026/03/28/filename.mp4",
+ *            publicUrl: "https://pub-xxx.r2.dev/posts/2026/03/28/filename.mp4" }
+ */
+async function handleSignUpload(request, env) {
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return respond('Invalid JSON body', 400, {}, request);
+  }
+
+  const { key, contentType, collection } = body;
+  if (!key) return respond('Missing key', 400, {}, request);
+
+  const today = new Date().toISOString().split('T')[0];
+  const prefixedKey = buildPrefix(collection || 'posts', today) + key;
+
+  const r2Client = new AwsClient({
+    accessKeyId: env.R2_ACCESS_KEY_ID,
+    secretAccessKey: env.R2_SECRET_ACCESS_KEY,
+    region: 'auto',
+    service: 's3',
+  });
+
+  const r2Url = new URL(
+    `/${env.BUCKET_NAME}/${encodeURIComponent(prefixedKey).replace(/%2F/g, '/')}`,
+    `https://${env.ACCOUNT_ID}.r2.cloudflarestorage.com`,
+  );
+
+  // Presigned URL valid for 1 hour
+  r2Url.searchParams.set('X-Amz-Expires', '3600');
+
+  const signed = await r2Client.sign(r2Url.toString(), {
+    method: 'PUT',
+    headers: { 'Content-Type': contentType || 'application/octet-stream' },
+    aws: { signQuery: true },
+  });
+
+  const result = {
+    url: signed.url,
+    key: prefixedKey,
+    publicUrl: `${env.PUBLIC_URL}/${prefixedKey}`,
+  };
+
+  return respond(JSON.stringify(result), 200, { 'Content-Type': 'application/json' }, request);
+}
+
+/** PUT — upload with collection + date prefix (used for small files proxied through Worker). */
 async function handlePut(key, request, env, today, collection) {
   if (!key) return respond('Missing key', 400, {}, request);
 

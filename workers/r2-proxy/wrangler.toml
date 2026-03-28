@@ -9,10 +9,12 @@ bucket_name = "musictide-media"
 [vars]
 BUCKET_NAME = "musictide-media"
 PUBLIC_URL = "https://pub-576ea11202f543d0bf28d36ef63d18ff.r2.dev"
+ACCOUNT_ID = "43220b81420989e7198287bd4559a701"
+R2_ACCESS_KEY_ID = "e04ffceffcb454326996be5a9af00865"
 
+# R2_SECRET_ACCESS_KEY is stored as a Worker secret (wrangler secret put).
 # Auth: GitHub OAuth token forwarded from CMS browser session.
 # Worker verifies push access to n-000000/musictide via GitHub API.
-# No secrets needed for CMS operations — auth piggybacks on existing GitHub OAuth.
 
 # Scheduled cleanup: delete orphaned R2 files not referenced in content.
 # Repo is public — no GitHub token needed.

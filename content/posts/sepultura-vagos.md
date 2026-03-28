@@ -4,7 +4,7 @@ title: 'Sepultura: Roots Bloody Roots em Vagos'
 date: 2025-08-09T20:00:00+01:00
 featureimage: https://picsum.photos/seed/sepultura/1200/600
 featureimagecaption: Sepultura @ Vagos Metal Fest
-author: ''
+author: Nuno
 gallery:
   - https://picsum.photos/seed/sepultura1/800/600
   - https://picsum.photos/seed/sepultura2/800/600

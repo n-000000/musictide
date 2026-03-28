@@ -4,7 +4,7 @@ title: 'Deftones: Sacramento Aterra em Lisboa'
 date: 2025-07-05T22:00:00+01:00
 featureimage: https://picsum.photos/seed/deftones/1200/600
 featureimagecaption: Deftones @ VOA Heavy Rock Fest
-author: ''
+author: Nuno
 gallery:
   - https://picsum.photos/seed/deftones1/800/600
   - https://picsum.photos/seed/deftones2/800/600

@@ -4,7 +4,7 @@ title: 'Blind Zero: Os Nossos São os Melhores'
 date: 2025-07-05T19:00:00+01:00
 featureimage: https://picsum.photos/seed/blindzero/1200/600
 featureimagecaption: Blind Zero @ VOA Heavy Rock Fest
-author: ''
+author: Nuno
 gallery:
   - https://picsum.photos/seed/blindzero1/800/600
   - https://picsum.photos/seed/blindzero2/800/600

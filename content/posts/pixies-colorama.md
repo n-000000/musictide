@@ -4,7 +4,7 @@ title: 'Pixies: O Barulho Mais Bonito do Verão'
 date: 2025-07-19T21:00:00+01:00
 featureimage: https://picsum.photos/seed/pixies/1200/600
 featureimagecaption: Pixies @ Colorama Festival
-author: ''
+author: Nuno
 gallery:
   - https://picsum.photos/seed/pixies1/800/600
   - https://picsum.photos/seed/pixies2/800/600

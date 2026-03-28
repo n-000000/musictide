@@ -4,7 +4,7 @@ title: 'Moonspell: Os Filhos da Noite Chegam a Casa'
 date: 2025-08-08T23:15:00+01:00
 featureimage: https://picsum.photos/seed/moonspell/1200/600
 featureimagecaption: Moonspell @ Vagos Metal Fest
-author: ''
+author: Nuno
 gallery:
   - https://picsum.photos/seed/moonspell1/800/600
   - https://picsum.photos/seed/moonspell2/800/600

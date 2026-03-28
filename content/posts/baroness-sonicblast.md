@@ -4,7 +4,7 @@ title: 'Baroness: Cor e Caos em Doses Iguais'
 date: 2025-08-01T20:30:00+01:00
 featureimage: https://picsum.photos/seed/baroness/1200/600
 featureimagecaption: Baroness @ Sonic Blast
-author: ''
+author: Nuno
 gallery:
   - https://picsum.photos/seed/baroness1/800/600
   - https://picsum.photos/seed/baroness2/800/600

@@ -1,0 +1,74 @@
+{{- /*
+  resolve-feature-image.html — single source of truth for feature-image lookup.
+
+  Replaces the ~30 lines of duplicated resolution logic that lived in
+  big.html, card.html, and (partially) hero.html.
+
+  ── Input (dict) ──────────────────────────────────────────────────────
+    .Page       — page context (required)
+    .Globs      — slice of resource-match globs
+                  default: ["*feature*" "*cover*" "*thumbnail*"]
+    .DefaultKey — site.Store key for the fallback image
+                  default: "defaultFeaturedImage"
+    .Resize     — resize spec, e.g. "600x"  (empty string = no resize)
+
+  ── Returns (dict) ────────────────────────────────────────────────────
+    .URL        — resolved image URL (empty string if nothing found)
+    .Resource   — Hugo image resource or nil
+    .IsDefault  — true when the fallback was used
+*/ -}}
+
+{{- $page       := .Page -}}
+{{- $globs      := .Globs      | default (slice "*feature*" "*cover*" "*thumbnail*") -}}
+{{- $defaultKey := .DefaultKey | default "defaultFeaturedImage" -}}
+{{- $resize     := .Resize     | default "" -}}
+{{- $disableOpt := site.Store.Get "disableImageOptimization" -}}
+
+{{- $resource   := "" -}}
+{{- $url        := "" -}}
+{{- $isDefault  := false -}}
+
+{{- /* 1. Frontmatter `featureimage` — local or remote */ -}}
+{{- with $page.Params.featureimage -}}
+  {{- if or (strings.HasPrefix . "http:") (strings.HasPrefix . "https:") -}}
+    {{- if site.Params.hotlinkFeatureImage -}}
+      {{- $url = . -}}
+    {{- else -}}
+      {{- $resource = resources.GetRemote . -}}
+    {{- end -}}
+  {{- else -}}
+    {{- $resource = resources.Get . -}}
+  {{- end -}}
+{{- end -}}
+
+{{- /* 2. Page bundle resources matching globs */ -}}
+{{- if not (or $resource $url) -}}
+  {{- $images := $page.Resources.ByType "image" -}}
+  {{- range $globs -}}
+    {{- if not $resource }}{{ $resource = $images.GetMatch . }}{{ end -}}
+  {{- end -}}
+{{- end -}}
+
+{{- /* 3. Site-level default */ -}}
+{{- if not (or $resource $url) -}}
+  {{- $default := site.Store.Get $defaultKey -}}
+  {{- if $default.url -}}
+    {{- $url = $default.url -}}
+    {{- $isDefault = true -}}
+  {{- else if $default.obj -}}
+    {{- $resource = $default.obj -}}
+    {{- $isDefault = true -}}
+  {{- end -}}
+{{- end -}}
+
+{{- /* 4. Build URL — optionally resize */ -}}
+{{- if not $url -}}
+  {{- with $resource -}}
+    {{- $url = .RelPermalink -}}
+    {{- if and $resize (not (or $disableOpt (eq .MediaType.SubType "svg"))) -}}
+      {{- $url = (.Resize $resize).RelPermalink -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+
+{{- return (dict "URL" $url "Resource" $resource "IsDefault" $isDefault) -}}

@@ -6,7 +6,7 @@
 
     <div class="author-grid">
       {{ range where .Site.RegularPages "Section" "authors" }}
-        <div class="author-card">
+        <div id="{{ .Title | urlize }}" class="author-card">
 
           {{/* Photo — use URL directly; R2 images are external and don't need Hugo processing */}}
           {{ if .Params.photo }}

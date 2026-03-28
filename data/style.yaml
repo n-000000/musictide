@@ -1,6 +1,6 @@
 site_name: ''
-show_theme_toggle: true
-colorScheme: slate
+show_theme_toggle: false
+colorScheme: goth
 heading_font: bebas-neue
 body_font: lato
 homepage_layout: hero

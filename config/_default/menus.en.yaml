@@ -1,1 +1,4 @@
-# Menu entries for English — populated in a later phase
+main:
+  - name: Contributors
+    url: /en/authors/
+    weight: 30

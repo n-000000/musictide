@@ -74,10 +74,11 @@ collections:
 
       - label: Galeria
         name: gallery
-        widget: image
+        widget: file
         multiple: true
         required: false
-        hint: "Seleccione várias imagens de uma vez"
+        accept: "image/*,video/mp4,video/webm,video/quicktime"
+        hint: "Seleccione várias imagens ou vídeos de uma vez"
 
       - label: Rascunho
         name: draft

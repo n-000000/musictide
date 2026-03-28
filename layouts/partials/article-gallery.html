@@ -2,16 +2,24 @@
   article-gallery.html — renders the gallery frontmatter field.
   Called from layouts/_default/single.html after .Content.
 
-  Expects .Params.gallery to be a list of image URLs.
+  Expects .Params.gallery to be a list of image or video URLs.
   Renders a responsive masonry-style grid using CSS columns.
+  Videos (mp4, webm, mov) get a <video> tag; everything else gets <img>.
 */ -}}
 {{- with .Params.gallery -}}
 <div class="mt-10 mb-4">
   <div class="mt-gallery">
     {{- range . -}}
+    {{- $ext := lower (path.Ext .) -}}
+    {{- if or (eq $ext ".mp4") (eq $ext ".webm") (eq $ext ".mov") -}}
+    <div>
+      <video src="{{ . }}" controls preload="metadata" class="w-full rounded"></video>
+    </div>
+    {{- else -}}
     <div>
       <img src="{{ . }}" alt="" loading="lazy" class="w-full rounded">
     </div>
+    {{- end -}}
     {{- end -}}
   </div>
 </div>

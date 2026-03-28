@@ -39,12 +39,11 @@
     <script>
       // ── R2 Proxy Interceptor ─────────────────────────────────────
       // Redirects Sveltia's S3 API calls from R2 to our proxy Worker.
-      // The Worker adds date-based prefixes and verifies GitHub auth.
+      // PUT uploads use presigned URLs (direct-to-R2) to avoid Worker
+      // body size limits. All other ops are proxied through the Worker.
       // No secrets in this file — auth piggybacks on GitHub OAuth.
       (function () {
         const R2_HOST = '43220b81420989e7198287bd4559a701.r2.cloudflarestorage.com';
-        // TODO: enable after deploying Worker: npx wrangler deploy (from workers/r2-proxy/)
-        const PROXY_ENABLED = true;
         const PROXY_HOST = 'musictide-media-proxy.leftfield.workers.dev';
 
         // Try known localStorage keys where Sveltia/Netlify CMS stores the GitHub token.
@@ -70,25 +69,71 @@
         }
 
         const _fetch = window.fetch;
+
+        // Helper: proxy a non-PUT request through the Worker (list, delete, head, get).
+        function proxyThroughWorker(url, init) {
+          const newUrl = url.replace(R2_HOST, PROXY_HOST);
+          const newInit = Object.assign({}, init || {});
+          const headers = new Headers(newInit.headers || {});
+
+          headers.delete('authorization');
+          headers.delete('x-amz-date');
+          headers.delete('x-amz-content-sha256');
+          headers.set('Authorization', 'Bearer ' + getGitHubToken());
+          headers.set('X-Collection', getCurrentCollection());
+
+          newInit.headers = headers;
+          return _fetch.call(window, newUrl, newInit);
+        }
+
+        // Helper: upload via presigned URL (PUT directly to R2, bypasses Worker body limit).
+        async function uploadViaPresignedUrl(url, init) {
+          // Extract the filename from the S3 PUT path: /{bucket}/{key}
+          const pathParts = new URL(url).pathname.slice(1).split('/');
+          const key = decodeURIComponent(pathParts.slice(1).join('/'));
+          const contentType = (init && init.headers)
+            ? (new Headers(init.headers)).get('Content-Type') || 'application/octet-stream'
+            : 'application/octet-stream';
+
+          // Step 1: ask Worker for a presigned URL
+          const signRes = await _fetch.call(window, 'https://' + PROXY_HOST + '/sign-upload', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer ' + getGitHubToken(),
+            },
+            body: JSON.stringify({
+              key: key,
+              contentType: contentType,
+              collection: getCurrentCollection(),
+            }),
+          });
+
+          if (!signRes.ok) {
+            throw new Error('Failed to get presigned upload URL: ' + signRes.status);
+          }
+
+          const { url: presignedUrl } = await signRes.json();
+
+          // Step 2: PUT the file body directly to R2 via the presigned URL
+          const putRes = await _fetch.call(window, presignedUrl, {
+            method: 'PUT',
+            body: init.body,
+            headers: { 'Content-Type': contentType },
+          });
+
+          return putRes;
+        }
+
         window.fetch = function (input, init) {
           let url = typeof input === 'string' ? input : input instanceof Request ? input.url : String(input);
 
-          if (PROXY_ENABLED && url.includes(R2_HOST)) {
-            const newUrl = url.replace(R2_HOST, PROXY_HOST);
-            const newInit = Object.assign({}, init || {});
-            const headers = new Headers(newInit.headers || {});
-
-            // Strip AWS Signature V4 auth, add GitHub token
-            headers.delete('authorization');
-            headers.delete('x-amz-date');
-            headers.delete('x-amz-content-sha256');
-            headers.set('Authorization', 'Bearer ' + getGitHubToken());
-
-            // Tell the Worker which collection we're in
-            headers.set('X-Collection', getCurrentCollection());
-
-            newInit.headers = headers;
-            return _fetch.call(window, newUrl, newInit);
+          if (url.includes(R2_HOST)) {
+            var method = (init && init.method) || 'GET';
+            if (method.toUpperCase() === 'PUT') {
+              return uploadViaPresignedUrl(url, init);
+            }
+            return proxyThroughWorker(url, init);
           }
 
           return _fetch.apply(window, arguments);

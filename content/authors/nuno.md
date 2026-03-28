@@ -1,13 +1,13 @@
 ---
 title: Nuno
-photo: https://pub-576ea11202f543d0bf28d36ef63d18ff.r2.dev/test.jpg
-email: ngon@noreply.org
-instagram: ''
-facebook: musictide
-x_twitter: musictide
-bluesky: musictide
+photo: https://pub-576ea11202f543d0bf28d36ef63d18ff.r2.dev/authors/2026/03/28/test.jpg
+email: nuno@noreply.musictide.com
+instagram: mtnuno
+facebook: mtnuno
+x_twitter: mtnuno
+bluesky: ''
 tiktok: ''
-youtube: ''
+youtube: funkmaster3k
 spotify: ''
 draft: false
 tags: []

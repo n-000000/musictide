@@ -4,7 +4,7 @@ title: 'HEALTH: Ruído Industrial à Beira-Mar'
 date: 2025-07-12T00:00:00+01:00
 featureimage: https://picsum.photos/seed/health/1200/600
 featureimagecaption: HEALTH @ Sumol Summer Fest
-author: ''
+author: Nuno
 gallery:
   - https://picsum.photos/seed/health1/800/600
   - https://picsum.photos/seed/health2/800/600

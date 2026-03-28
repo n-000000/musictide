@@ -17,7 +17,7 @@ footer:
   showScrollToTop: true
 
 homepage:
-  layout: page
+  layout: hero
   showRecent: true
   showRecentItems: 9
   cardView: true

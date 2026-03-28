@@ -267,13 +267,15 @@ async function cleanupOrphanedMedia(env) {
     );
     if (!content) continue;
 
-    // Match full R2 public URLs → extract the key part
+    // Match full R2 public URLs → extract the key part.
+    // Keys may contain spaces (user-uploaded filenames), so match until
+    // newline, quote, or closing paren — then trim trailing whitespace.
     const urlPattern = new RegExp(
-      escapeRegex(publicUrl) + '/([^\\s"\'\\)]+)',
+      escapeRegex(publicUrl) + '/([^\\n"\'\\)]+)',
       'g',
     );
     for (const match of content.matchAll(urlPattern)) {
-      referencedKeys.add(decodeURIComponent(match[1]));
+      referencedKeys.add(decodeURIComponent(match[1].trim()));
     }
   }
 

@@ -11,6 +11,7 @@
 {{- $bodyFont := $style.body_font | default "system" -}}
 {{- $contentStyle := $style.content_style | default "cards-wide" -}}
 {{- $isWide := or (eq $contentStyle "cards-wide") (eq $contentStyle "list-wide") -}}
+{{- $showThemeToggle := $style.show_theme_toggle | default true -}}
 
 {{- /* ── Color scheme ──────────────────────────────────────────── */ -}}
 {{- $cssScheme := resources.Get (printf "css/schemes/%s.css" $colorScheme) -}}
@@ -179,3 +180,10 @@
     height: 1.25rem;
   }
 </style>
+
+{{- /* ── Theme toggle visibility ───────────────────────────────── */ -}}
+{{- if not $showThemeToggle }}
+<style>
+  #appearance-switcher, #appearance-switcher-mobile { display: none !important; }
+</style>
+{{- end }}

@@ -233,6 +233,18 @@ collections:
         file: data/style.yaml
         fields:
 
+          - label: Nome do Site
+            name: site_name
+            widget: string
+            required: false
+            hint: "Nome apresentado no cabeçalho. Deixe em branco para usar o nome padrão."
+
+          - label: Mostrar botão claro/escuro
+            name: show_theme_toggle
+            widget: boolean
+            default: true
+            hint: "Mostra ou esconde o botão de alternar tema no cabeçalho"
+
           - label: Esquema de Cores
             name: colorScheme
             widget: select

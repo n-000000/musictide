@@ -1,0 +1,96 @@
+{{ define "main" }}
+  <div class="max-w-7xl mx-auto">
+    <h1 class="mt-8 mb-2 text-4xl font-extrabold text-neutral-900 dark:text-neutral">
+      {{ .Title }}
+    </h1>
+
+    <div class="author-grid">
+      {{ range where .Site.RegularPages "Section" "authors" }}
+        <div class="author-card">
+
+          {{/* Photo — use URL directly; R2 images are external and don't need Hugo processing */}}
+          {{ if .Params.photo }}
+            <img
+              src="{{ .Params.photo }}"
+              alt="{{ .Title }}"
+              class="author-photo"
+            />
+          {{ else }}
+            <div class="author-photo-placeholder">
+              {{ substr .Title 0 1 | upper }}
+            </div>
+          {{ end }}
+
+          {{/* Info */}}
+          <div class="author-info">
+            <p class="author-name">{{ .Title }}</p>
+
+            {{ if .Plain }}
+              <p class="author-bio">{{ .Plain }}</p>
+            {{ end }}
+
+            {{/* Social icons — each rendered only when field is non-empty */}}
+            <div class="author-social">
+              {{ with .Params.email }}
+                <a href="mailto:{{ . }}" title="Email">
+                  {{ partial "icon.html" "email" }}
+                </a>
+              {{ end }}
+              {{ with .Params.instagram }}
+                <a href="{{ . }}" target="_blank" rel="noopener noreferrer" title="Instagram">
+                  {{ partial "icon.html" "instagram" }}
+                </a>
+              {{ end }}
+              {{ with .Params.facebook }}
+                <a href="{{ . }}" target="_blank" rel="noopener noreferrer" title="Facebook">
+                  {{ partial "icon.html" "facebook" }}
+                </a>
+              {{ end }}
+              {{ with .Params.x_twitter }}
+                <a href="{{ . }}" target="_blank" rel="noopener noreferrer" title="X / Twitter">
+                  {{ partial "icon.html" "x-twitter" }}
+                </a>
+              {{ end }}
+              {{ with .Params.bluesky }}
+                <a href="{{ . }}" target="_blank" rel="noopener noreferrer" title="Bluesky">
+                  {{ partial "icon.html" "bluesky" }}
+                </a>
+              {{ end }}
+              {{ with .Params.mastodon }}
+                <a href="{{ . }}" target="_blank" rel="noopener noreferrer" title="Mastodon">
+                  {{ partial "icon.html" "mastodon" }}
+                </a>
+              {{ end }}
+              {{ with .Params.threads }}
+                <a href="{{ . }}" target="_blank" rel="noopener noreferrer" title="Threads">
+                  {{ partial "icon.html" "threads" }}
+                </a>
+              {{ end }}
+              {{ with .Params.tiktok }}
+                <a href="{{ . }}" target="_blank" rel="noopener noreferrer" title="TikTok">
+                  {{ partial "icon.html" "tiktok" }}
+                </a>
+              {{ end }}
+              {{ with .Params.youtube }}
+                <a href="{{ . }}" target="_blank" rel="noopener noreferrer" title="YouTube">
+                  {{ partial "icon.html" "youtube" }}
+                </a>
+              {{ end }}
+              {{ with .Params.soundcloud }}
+                <a href="{{ . }}" target="_blank" rel="noopener noreferrer" title="SoundCloud">
+                  {{ partial "icon.html" "soundcloud" }}
+                </a>
+              {{ end }}
+              {{ with .Params.spotify }}
+                <a href="{{ . }}" target="_blank" rel="noopener noreferrer" title="Spotify">
+                  {{ partial "icon.html" "spotify" }}
+                </a>
+              {{ end }}
+            </div>
+          </div>
+
+        </div>
+      {{ end }}
+    </div>
+  </div>
+{{ end }}

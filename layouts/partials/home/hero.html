@@ -32,10 +32,9 @@
 <div class="fixed inset-x-0 top-0 -z-10">
   <img
     id="background-image"
-    class="nozoom h-[1000px] w-full object-cover"
+    class="nozoom h-[1000px] w-full object-cover mt-img-flush"
     src="{{ $pageBgURL }}"
-    role="presentation"
-    style="margin:0;">
+    role="presentation">
   <div
     class="from-neutral absolute inset-0 h-[1000px] bg-gradient-to-t to-transparent mix-blend-normal dark:from-neutral-800"></div>
   <div
@@ -48,15 +47,15 @@
   <div class="relative">
     <div class="absolute inset-x-0 bottom-0 h-1/2"></div>
     {{- if $isWide }}
-    <div class="relative w-screen px-[30px]" style="max-width: 1600px; margin-left: calc(max(-50vw, -800px) + 50%);">
+    <div class="mt-wide mt-breakout">
     {{- else }}
     <div>
     {{- end }}
       {{- /* Hero container: <a> when latest exists, <div> fallback */ -}}
       {{- if $latest }}
-      <a href="{{ $latest.Permalink }}" class="block relative no-underline shadow-xl" style="aspect-ratio:16/9;overflow:hidden;">
+      <a href="{{ $latest.Permalink }}" class="mt-hero-frame block relative no-underline shadow-xl">
       {{- else }}
-      <div class="block relative shadow-xl" style="aspect-ratio:16/9;overflow:hidden;">
+      <div class="mt-hero-frame block relative shadow-xl">
       {{- end }}
 
         {{- /* Hero background image (article featureimage) */ -}}
@@ -66,10 +65,10 @@
             class="nozoom h-full w-full object-cover"
             src="{{ $heroURL }}"
             role="presentation"
-            style="margin:0;">
+            class="mt-img-flush">
         </div>
-        <div class="absolute inset-0" style="background:linear-gradient(to top,rgba(0,0,0,.88) 0%,rgba(0,0,0,.5) 40%,rgba(0,0,0,.15) 70%,transparent 100%)"></div>
-        <div class="absolute inset-0" style="background:radial-gradient(ellipse at center,transparent 40%,rgba(0,0,0,.35) 100%)"></div>
+        <div class="mt-hero-grad absolute inset-0"></div>
+        <div class="mt-hero-vignette absolute inset-0"></div>
         {{- end }}
 
         <div class="hero-content">
@@ -105,10 +104,10 @@
   {{- if $latest -}}
     {{- $remaining = where $remaining "Permalink" "ne" $latest.Permalink -}}
   {{- end -}}
-  <h2 class="mt-8 text-2xl font-extrabold mb-10">{{ i18n "shortcode.recent_articles" | emojify }}</h2>
   {{- if $isWide }}
-  <div class="relative w-screen px-[30px]" style="max-width: 1600px; margin-left: calc(max(-50vw, -800px) + 50%);">
+  <div class="mt-wide mt-breakout">
   {{- end }}
+  <h2 class="mt-8 text-2xl font-extrabold mb-10">{{ i18n "shortcode.recent_articles" | emojify }}</h2>
   {{- if $isCards }}
   <section class="w-full grid gap-4 sm:grid-cols-2 md:grid-cols-3{{- if $isWide }} xl:grid-cols-4 2xl:grid-cols-5{{- end }}">
     {{- range first $count $remaining -}}

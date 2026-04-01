@@ -73,11 +73,7 @@
 
         <div class="hero-content">
           {{- if $latest }}
-            {{- with $latest.Params.event }}
-            <span class="bg-primary-500 text-neutral-100 hero-badge">
-              {{ . }}
-            </span>
-            {{- end }}
+            {{ partial "category-badge.html" $latest }}
             <h1 class="hero-title text-neutral-100">
               {{ $latest.Title }}
             </h1>

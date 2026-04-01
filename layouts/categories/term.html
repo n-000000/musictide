@@ -12,11 +12,10 @@
   {{- $colorSlot := .Params.color | default "primary-500" -}}
   {{- $slug      := .Title | urlize -}}
   {{- $className := printf "cat-heading--%s" $slug -}}
-
-<style>.{{ $className }}{color:rgb(var(--color-{{ $colorSlot }}));}</style>
+  {{- $headingStyle := printf "color:rgb(var(--color-%s))" $colorSlot | safeCSS -}}
 
 <header class="mt-5 mb-8">
-  <h1 class="{{ $className }} mt-5 text-4xl font-extrabold">{{ .Title }}</h1>
+  <h1 class="{{ $className }} mt-5 text-4xl font-extrabold" style="{{ $headingStyle }}">{{ .Title }}</h1>
 </header>
 
 {{ if gt (len .Pages) 0 }}

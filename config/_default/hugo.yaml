@@ -26,7 +26,6 @@ taxonomies:
   category: categories
   author: authors
   series: series
-  event: events
 
 related:
   threshold: 0
@@ -40,8 +39,6 @@ related:
       weight: 50
     - name: authors
       weight: 20
-    - name: events
-      weight: 80
     - name: date
       weight: 10
-      pattern: "200601"   # match by year+month
+      pattern: "200601"

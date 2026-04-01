@@ -1,5 +1,5 @@
 ---
-event: Vagos Metal Fest O Rama
+categories: [Cultura]
 title: 'Moonspell: Os Filhos da Noite Chegam a Casa'
 date: 2025-08-08T23:15:00+01:00
 featureimage: https://picsum.photos/seed/moonspell/1200/600

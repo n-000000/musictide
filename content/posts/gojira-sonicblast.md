@@ -1,5 +1,5 @@
 ---
-event: Sonic Blast
+categories: [Cultura]
 title: Gojira Arrasa Moledo em 45 Minutos
 date: 2025-08-02T21:30:00+01:00
 featureimage: https://picsum.photos/seed/gojira/1200/600

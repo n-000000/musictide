@@ -1,5 +1,5 @@
 ---
-event: Colorama
+categories: [Cultura]
 title: 'Pixies: O Barulho Mais Bonito do Verão'
 date: 2025-07-19T21:00:00+01:00
 featureimage: https://picsum.photos/seed/pixies/1200/600

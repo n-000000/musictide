@@ -1,3 +1,0 @@
----
-title: Sumol Summer Fest
----

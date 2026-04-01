@@ -1,4 +1,16 @@
 main:
+  - name: Cultura
+    url: /categories/cultura/
+    weight: 10
+  - name: Desporto
+    url: /categories/desporto/
+    weight: 20
+  - name: Lifestyle
+    url: /categories/lifestyle/
+    weight: 25
+  - name: Agenda
+    url: /categories/agenda/
+    weight: 30
   - name: Colaboradores
     url: /authors/
-    weight: 30
+    weight: 50

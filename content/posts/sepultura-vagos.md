@@ -1,5 +1,5 @@
 ---
-event: Vagos Metal Fest O Rama
+categories: [Cultura]
 title: 'Sepultura: Roots Bloody Roots em Vagos'
 date: 2025-08-09T20:00:00+01:00
 featureimage: https://picsum.photos/seed/sepultura/1200/600

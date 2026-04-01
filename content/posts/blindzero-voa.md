@@ -1,5 +1,5 @@
 ---
-event: VOA Heavy Rock Fest
+categories: [Cultura]
 title: 'Blind Zero: Os Nossos São os Melhores'
 date: 2025-07-05T19:00:00+01:00
 featureimage: https://picsum.photos/seed/blindzero/1200/600

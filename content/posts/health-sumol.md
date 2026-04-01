@@ -1,5 +1,5 @@
 ---
-event: Sumol Summer Fest
+categories: [Cultura]
 title: 'HEALTH: Ruído Industrial à Beira-Mar'
 date: 2025-07-12T00:00:00+01:00
 featureimage: https://picsum.photos/seed/health/1200/600

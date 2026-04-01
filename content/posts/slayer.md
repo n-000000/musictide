@@ -1,5 +1,5 @@
 ---
-event: Vagos Metal Fest O Rama
+categories: [Cultura]
 title: 'Slayer: o pacto de sangue que ninguém quis quebrar'
 date: 2026-03-23T23:20:00+00:00
 featureimage: https://pub-576ea11202f543d0bf28d36ef63d18ff.r2.dev/posts/2026/04/07/03658_nightfallatlakeaurora_1920x1080.jpg

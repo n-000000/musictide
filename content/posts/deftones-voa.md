@@ -1,5 +1,5 @@
 ---
-event: VOA Heavy Rock Fest
+categories: [Cultura]
 title: 'Deftones: Sacramento Aterra em Lisboa'
 date: 2025-07-05T22:00:00+01:00
 featureimage: https://picsum.photos/seed/deftones/1200/600

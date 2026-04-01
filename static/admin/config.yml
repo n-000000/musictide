@@ -26,16 +26,16 @@ collections:
     preview_path: "posts/{{slug}}"
     fields:
 
-      - label: Evento
-        name: event
+      - label: Categoria
+        name: category
         widget: relation
-        collection: events
+        collection: categories
         search_fields: [title]
         value_field: title
         display_fields: [title]
         dropdown_threshold: 0
         required: false
-        hint: "Escolha o evento — pesquise pelo nome"
+        hint: "Categoria do artigo"
 
       - label: Título
         name: title
@@ -136,19 +136,33 @@ collections:
         widget: boolean
         default: true
 
-  # ── EVENTOS ──────────────────────────────────────────────────
-  - name: events
-    label: Eventos
-    label_singular: Evento
-    folder: content/events
+  # ── CATEGORIAS ────────────────────────────────────────────────
+  - name: categories
+    label: Categorias
+    label_singular: Categoria
+    folder: content/categories
     create: true
+    path: "{{slug}}/_index"
     identifier_field: title
     fields:
 
       - label: Nome
         name: title
         widget: string
-        hint: "Ex: Vagos Metal Fest 2025, SonicBlast 2099"
+        hint: "Ex: Cultura, Desporto, Lifestyle, Agenda"
+
+      - label: Cor
+        name: color
+        widget: select
+        options:
+          - { label: "Primário médio", value: "primary-500" }
+          - { label: "Primário claro", value: "primary-300" }
+          - { label: "Primário forte", value: "primary-700" }
+          - { label: "Secundário médio", value: "secondary-500" }
+          - { label: "Secundário claro", value: "secondary-300" }
+          - { label: "Secundário forte", value: "secondary-700" }
+        default: "primary-500"
+        hint: "Cor do badge da categoria, amostrada do esquema de cores activo"
 
   # ── COLABORADORES ─────────────────────────────────────────────
   - name: authors

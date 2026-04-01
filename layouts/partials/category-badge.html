@@ -1,0 +1,22 @@
+{{- /*
+  category-badge.html — renders a colored badge for the article's first category.
+
+  Usage: {{ partial "category-badge.html" . }}
+  Context: a Page (article).
+
+  Looks up the category's _index.md to get its `color` param (e.g. "primary-500").
+  Injects a scoped <style> block so var(--color-X) isn't sanitized by Hugo.
+*/ -}}
+{{- $cats := .Params.categories -}}
+{{- if $cats -}}
+  {{- $first := index $cats 0 -}}
+  {{- $slug := $first | urlize -}}
+  {{- $catPage := site.GetPage (printf "/categories/%s" $slug) -}}
+  {{- $colorSlot := "primary-500" -}}
+  {{- if $catPage -}}
+    {{- $colorSlot = $catPage.Params.color | default "primary-500" -}}
+  {{- end -}}
+  {{- $className := printf "cat-badge--%s" $slug -}}
+<style>.{{ $className }}{background-color:rgb(var(--color-{{ $colorSlot }}));}</style>
+<span class="{{ $className }} text-neutral-100 hero-badge">{{ $first }}</span>
+{{- end -}}

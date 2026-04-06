@@ -4,8 +4,8 @@
   Usage: {{ partial "category-badge.html" . }}
   Context: a Page (article).
 
-  Looks up the category's _index.md to get its `color` param (e.g. "primary-500").
-  Injects a scoped <style> block so var(--color-X) isn't sanitized by Hugo.
+  Color comes from the category's _index.md `color` param (e.g. "primary-500").
+  Applied via a static CSS class (cat-bg--<slot>) defined in musictide.css.
 */ -}}
 {{- $cats := .Params.categories -}}
 {{- if $cats -}}
@@ -16,7 +16,5 @@
   {{- if $catPage -}}
     {{- $colorSlot = $catPage.Params.color | default "primary-500" -}}
   {{- end -}}
-  {{- $className := printf "cat-badge--%s" $slug -}}
-<style>.{{ $className }}{background-color:rgb(var(--color-{{ $colorSlot }}));}</style>
-<span class="{{ $className }} text-neutral-100 hero-badge">{{ $first }}</span>
+<span class="cat-bg--{{ $colorSlot }} text-neutral-100 hero-badge">{{ $first }}</span>
 {{- end -}}

@@ -207,3 +207,21 @@ header > div {
   .hero-title   { font-size: 4.5rem; }
   .mt-gallery   { columns: 3; }
 }
+
+/* ═══════════════════════════════════════════════════════════
+   CATEGORY PALETTE SLOTS
+   ═══════════════════════════════════════════════════════════ */
+
+.cat-bg--primary-300{background-color:rgb(var(--color-primary-300))}
+.cat-bg--primary-500{background-color:rgb(var(--color-primary-500))}
+.cat-bg--primary-700{background-color:rgb(var(--color-primary-700))}
+.cat-bg--secondary-300{background-color:rgb(var(--color-secondary-300))}
+.cat-bg--secondary-500{background-color:rgb(var(--color-secondary-500))}
+.cat-bg--secondary-700{background-color:rgb(var(--color-secondary-700))}
+
+.cat-text--primary-300{color:rgb(var(--color-primary-300))}
+.cat-text--primary-500{color:rgb(var(--color-primary-500))}
+.cat-text--primary-700{color:rgb(var(--color-primary-700))}
+.cat-text--secondary-300{color:rgb(var(--color-secondary-300))}
+.cat-text--secondary-500{color:rgb(var(--color-secondary-500))}
+.cat-text--secondary-700{color:rgb(var(--color-secondary-700))}

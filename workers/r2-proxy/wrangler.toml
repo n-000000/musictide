@@ -16,7 +16,6 @@ R2_ACCESS_KEY_ID = "e04ffceffcb454326996be5a9af00865"
 # Auth: GitHub OAuth token forwarded from CMS browser session.
 # Worker verifies push access to n-000000/musictide via GitHub API.
 
-# Scheduled cleanup: delete orphaned R2 files not referenced in content.
-# Repo is public — no GitHub token needed.
-[triggers]
-crons = ["0 3 * * *"]  # daily at 03:00 UTC
+# Orphan cleanup disabled — see index.js
+# [triggers]
+# crons = ["0 3 * * *"]  # daily at 03:00 UTC

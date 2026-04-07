@@ -1,4 +1,4 @@
 ---
 title: Lifestyle
-color: primary-300
+color: primary-500
 ---

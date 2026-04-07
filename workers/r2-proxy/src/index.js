@@ -116,14 +116,11 @@ function escapeXml(s) {
 }
 
 export default {
-  /**
-   * Scheduled handler — daily R2 orphan cleanup.
-   * Lists all R2 keys, fetches content files from GitHub, deletes
-   * any R2 object not referenced in any markdown file.
-   */
-  async scheduled(event, env, ctx) {
-    ctx.waitUntil(cleanupOrphanedMedia(env));
-  },
+  // Orphan cleanup disabled — R2 free tier (10GB, no egress) makes it unnecessary
+  // and the cron was deleting images uploaded before their article was committed.
+  // async scheduled(event, env, ctx) {
+  //   ctx.waitUntil(cleanupOrphanedMedia(env));
+  // },
 
   async fetch(request, env) {
     // CORS preflight
@@ -290,6 +287,7 @@ async function handleHead(key, request, env) {
 }
 
 // ── Scheduled Cleanup ──────────────────────────────────────────────
+/*
 
 /**
  * Delete R2 objects not referenced in any content file.
@@ -395,3 +393,4 @@ async function ghFetchRaw(url) {
 function escapeRegex(s) {
   return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
+*/

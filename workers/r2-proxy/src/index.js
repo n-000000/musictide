@@ -286,111 +286,64 @@ async function handleHead(key, request, env) {
   }, request);
 }
 
-// ── Scheduled Cleanup ──────────────────────────────────────────────
-/*
-
-/**
- * Delete R2 objects not referenced in any content file.
- *
- * 1. Get full repo tree from GitHub API
- * 2. Fetch all markdown files under content/
- * 3. Collect every R2 URL or key referenced in their raw text
- * 4. List all R2 keys
- * 5. Delete the difference
- */
-async function cleanupOrphanedMedia(env) {
-  const publicUrl = env.PUBLIC_URL;
-
-  // 1. Get repo tree (recursive, single API call)
-  // Repo is public — no auth token needed (unauthenticated: 60 req/hour, plenty for daily cron)
-  const tree = await ghFetch(
-    `https://api.github.com/repos/${GITHUB_REPO}/git/trees/main?recursive=1`,
-  );
-  if (!tree?.tree) {
-    console.error('Failed to fetch repo tree');
-    return;
-  }
-
-  // 2. Find markdown files under content/
-  const mdFiles = tree.tree.filter(
-    (f) => f.type === 'blob' && f.path.startsWith('content/') && f.path.endsWith('.md'),
-  );
-
-  // 3. Fetch each file and collect referenced R2 keys
-  const referencedKeys = new Set();
-
-  for (const file of mdFiles) {
-    const content = await ghFetchRaw(
-      `https://api.github.com/repos/${GITHUB_REPO}/contents/${file.path}`,
-    );
-    if (!content) continue;
-
-    // Match full R2 public URLs → extract the key part.
-    // Keys may contain spaces (user-uploaded filenames), so match until
-    // newline, quote, or closing paren — then trim trailing whitespace.
-    const urlPattern = new RegExp(
-      escapeRegex(publicUrl) + '/([^\\n"\'\\)]+)',
-      'g',
-    );
-    for (const match of content.matchAll(urlPattern)) {
-      referencedKeys.add(decodeURIComponent(match[1].trim()));
-    }
-  }
-
-  // 4. List all R2 keys
-  const allKeys = [];
-  let cursor;
-  do {
-    const batch = await env.R2.list({ limit: 1000, cursor });
-    allKeys.push(...batch.objects.map((o) => o.key));
-    cursor = batch.truncated ? batch.cursor : null;
-  } while (cursor);
-
-  // 5. Delete orphans
-  const orphans = allKeys.filter((key) => !referencedKeys.has(key));
-
-  if (orphans.length === 0) {
-    console.log(`Cleanup: all ${allKeys.length} R2 objects are referenced`);
-    return;
-  }
-
-  // R2 delete supports up to 1000 keys per batch
-  for (let i = 0; i < orphans.length; i += 1000) {
-    await env.R2.delete(orphans.slice(i, i + 1000));
-  }
-
-  console.log(
-    `Cleanup: deleted ${orphans.length} orphaned objects out of ${allKeys.length} total`,
-  );
-}
-
-async function ghFetch(url) {
-  const res = await fetch(url, {
-    headers: {
-      'User-Agent': 'musictide-media-proxy',
-      Accept: 'application/vnd.github+json',
-    },
-  });
-  if (!res.ok) {
-    console.error(`GitHub API error: ${res.status} for ${url}`);
-    return null;
-  }
-  return res.json();
-}
-
-/** Fetch raw file content from GitHub Contents API. */
-async function ghFetchRaw(url) {
-  const res = await fetch(url, {
-    headers: {
-      'User-Agent': 'musictide-media-proxy',
-      Accept: 'application/vnd.github.raw+json',
-    },
-  });
-  if (!res.ok) return null;
-  return res.text();
-}
-
-function escapeRegex(s) {
-  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-*/
+// ── Scheduled Cleanup (disabled) ───────────────────────────────────────────
+// Orphan cleanup removed — R2 free tier (10GB, no egress) makes it unnecessary
+// and the cron was deleting images uploaded before their article was committed.
+//
+// async function cleanupOrphanedMedia(env) {
+//   const publicUrl = env.PUBLIC_URL;
+//   const tree = await ghFetch(
+//     `https://api.github.com/repos/${GITHUB_REPO}/git/trees/main?recursive=1`,
+//   );
+//   if (!tree?.tree) { console.error('Failed to fetch repo tree'); return; }
+//   const mdFiles = tree.tree.filter(
+//     (f) => f.type === 'blob' && f.path.startsWith('content/') && f.path.endsWith('.md'),
+//   );
+//   const referencedKeys = new Set();
+//   for (const file of mdFiles) {
+//     const content = await ghFetchRaw(
+//       `https://api.github.com/repos/${GITHUB_REPO}/contents/${file.path}`,
+//     );
+//     if (!content) continue;
+//     const urlPattern = new RegExp(escapeRegex(publicUrl) + '/([^\\n"\'\\)]+)', 'g');
+//     for (const match of content.matchAll(urlPattern)) {
+//       referencedKeys.add(decodeURIComponent(match[1].trim()));
+//     }
+//   }
+//   const allKeys = [];
+//   let cursor;
+//   do {
+//     const batch = await env.R2.list({ limit: 1000, cursor });
+//     allKeys.push(...batch.objects.map((o) => o.key));
+//     cursor = batch.truncated ? batch.cursor : null;
+//   } while (cursor);
+//   const orphans = allKeys.filter((key) => !referencedKeys.has(key));
+//   if (orphans.length === 0) {
+//     console.log(`Cleanup: all ${allKeys.length} R2 objects are referenced`);
+//     return;
+//   }
+//   for (let i = 0; i < orphans.length; i += 1000) {
+//     await env.R2.delete(orphans.slice(i, i + 1000));
+//   }
+//   console.log(`Cleanup: deleted ${orphans.length} orphaned objects out of ${allKeys.length} total`);
+// }
+//
+// async function ghFetch(url) {
+//   const res = await fetch(url, {
+//     headers: { 'User-Agent': 'musictide-media-proxy', Accept: 'application/vnd.github+json' },
+//   });
+//   if (!res.ok) { console.error(`GitHub API error: ${res.status} for ${url}`); return null; }
+//   return res.json();
+// }
+//
+// async function ghFetchRaw(url) {
+//   const res = await fetch(url, {
+//     headers: { 'User-Agent': 'musictide-media-proxy', Accept: 'application/vnd.github.raw+json' },
+//   });
+//   if (!res.ok) return null;
+//   return res.text();
+// }
+//
+// function escapeRegex(s) {
+//   return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+// }

@@ -2,13 +2,13 @@
 event: Vagos Metal Fest O Rama
 title: 'Slayer: o pacto de sangue que ninguém quis quebrar'
 date: 2026-03-23T23:20:00+00:00
-featureimage: https://pub-576ea11202f543d0bf28d36ef63d18ff.r2.dev/2026/03/23/03658_nightfallatlakeaurora_1920x1080.jpg
+featureimage: https://pub-576ea11202f543d0bf28d36ef63d18ff.r2.dev/posts/2026/04/07/03658_nightfallatlakeaurora_1920x1080.jpg
 featureimagecaption: Slayer @ Vagos Metal Fest O Rama
 author: Nuno
 gallery:
-  - https://pub-576ea11202f543d0bf28d36ef63d18ff.r2.dev/2026/03/23/03811_glassreflections_1920x1080.jpg
-  - https://pub-576ea11202f543d0bf28d36ef63d18ff.r2.dev/2026/03/24/Simon Stålenhag Wallpapers-COMMISSIONS- UNPUBLISHED WORK AND SOLO PIECES - 34.jpg
-  - https://pub-576ea11202f543d0bf28d36ef63d18ff.r2.dev/2026/03/24/10.04 LTS Lucid Lynx FullHD.jpg
+  - https://pub-576ea11202f543d0bf28d36ef63d18ff.r2.dev/posts/2026/04/07/03811_glassreflections_1920x1080.jpg
+  - https://pub-576ea11202f543d0bf28d36ef63d18ff.r2.dev/posts/2026/04/07/Bing-Aurora over Spirit Island on Maligne Lake- Jasper National Park- Alberta- Canada-Mumemories-Getty Images.jpg
+  - https://pub-576ea11202f543d0bf28d36ef63d18ff.r2.dev/posts/2026/04/07/simonstalenhag.jpg
 draft: false
 tags: []
 ---

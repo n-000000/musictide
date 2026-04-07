@@ -1,4 +1,4 @@
 ---
 title: Desporto
-color: secondary-500
+color: secondary-300
 ---

@@ -1,4 +1,4 @@
 ---
 title: Agenda
-color: secondary-300
+color: secondary-700
 ---

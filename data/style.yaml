@@ -1,8 +1,8 @@
 site_name: ''
 show_theme_toggle: false
-colorScheme: fire
+colorScheme: goth
 heading_font: bebas-neue
 body_font: lato
 homepage_layout: hero
 homepage_image: ''
-content_style: cards
+content_style: cards-wide

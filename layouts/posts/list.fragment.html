@@ -1,0 +1,54 @@
+{{- /*
+  list.fragment.html — bare HTML fragment for HTMX infinite scroll.
+
+  Standalone template (no {{ define "main" }} — baseof.html not applied).
+  Renders 5 cards per page grouped by month, with a sentinel at the bottom
+  pointing to the next page. The sentinel fires a custom 'preempt' event
+  triggered by IntersectionObserver (see extend-head.html).
+
+  Each month group gets its own mt-wide/mt-breakout wrapper (when wide).
+  The sentinel is always a top-level sibling — never inside a wrapper —
+  so outerHTML swaps don't cause nesting.
+*/ -}}
+{{- $siteStyle    := hugo.Data.style -}}
+{{- $contentStyle := $siteStyle.content_style | default "cards-wide" -}}
+{{- $isWide  := or (eq $contentStyle "cards-wide") (eq $contentStyle "list-wide") -}}
+{{- $isCards := or (eq $contentStyle "cards")      (eq $contentStyle "cards-wide") -}}
+
+{{- $posts := where (where site.RegularPages "Section" "posts") ".Params.draft" "ne" true -}}
+{{- $posts  = $posts.ByDate.Reverse -}}
+{{- $pager := .Paginate $posts 5 -}}
+
+{{- if $isCards }}
+  {{- range $pager.Pages.GroupByDate "January 2006" }}
+{{- if $isWide }}<div data-month-group class="mt-wide mt-breakout">{{- end }}
+<h3 data-month="{{ .Key }}" class="mt-10 mb-4 text-2xl font-extrabold text-neutral-700 dark:text-neutral-300">{{ .Key }}</h3>
+<section data-month-cards="{{ .Key }}" class="w-full grid gap-4 sm:grid-cols-2 md:grid-cols-3{{- if $isWide }} xl:grid-cols-4 2xl:grid-cols-5{{- end }}">
+    {{- range .Pages }}
+  {{ partial "article-link/card.html" . }}
+    {{- end }}
+</section>
+{{- if $isWide }}</div>{{- end }}
+  {{- end }}
+{{- else }}
+  {{- range $pager.Pages.GroupByDate "January 2006" }}
+{{- if $isWide }}<div data-month-group class="mt-wide mt-breakout">{{- end }}
+<h3 data-month="{{ .Key }}" class="mt-10 mb-4 text-2xl font-extrabold text-neutral-700 dark:text-neutral-300">{{ .Key }}</h3>
+<section data-month-cards="{{ .Key }}" class="space-y-10 w-full">
+    {{- range .Pages }}
+  {{ partial "article-link/simple.html" . }}
+    {{- end }}
+</section>
+{{- if $isWide }}</div>{{- end }}
+  {{- end }}
+{{- end }}
+
+{{- if $pager.HasNext }}
+<div
+  data-sentinel
+  hx-get="{{ $pager.Next.URL }}"
+  hx-trigger="preempt"
+  hx-target="this"
+  hx-swap="outerHTML">
+</div>
+{{- end }}

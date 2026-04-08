@@ -15,6 +15,14 @@ pagination:
 imaging:
   anchor: Center
 
+outputFormats:
+  fragment:
+    name: fragment
+    baseName: fragment
+    mediaType: text/html
+    isHTML: true
+    notAlternative: true
+
 outputs:
   home:
     - HTML

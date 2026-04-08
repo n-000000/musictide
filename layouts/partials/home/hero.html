@@ -88,89 +88,20 @@
   </div>
 </article>
 
-{{- /* ── Recent articles grid ────────────────────────────────── */ -}}
-{{- if .Site.Params.homepage.showRecent | default false -}}
-  {{- $count        := .Site.Params.homepage.showRecentItems | default 5 -}}
-  {{- $mainSections := .Site.Params.mainSections | default (slice "posts") -}}
-  {{- $remaining    := where site.RegularPages "Type" "in" $mainSections -}}
-  {{- if $latest -}}
-    {{- $remaining = where $remaining "Permalink" "ne" $latest.Permalink -}}
-  {{- end -}}
-
-  {{- if $isWide }}
-  <div class="mt-wide mt-breakout">
-  {{- end }}
-  <h2 class="mt-8 text-2xl font-extrabold mb-10">{{ i18n "shortcode.recent_articles" | emojify }}</h2>
-
-  {{- if $isCards }}
-  <section class="w-full grid gap-4 sm:grid-cols-2 md:grid-cols-3{{- if $isWide }} xl:grid-cols-4 2xl:grid-cols-5{{- end }}">
-    {{- range first $count $remaining -}}
-      {{ partial "article-link/card.html" . }}
-    {{- end -}}
-  </section>
-  {{- else }}
-  <section class="space-y-10 w-full">
-    {{- range first $count $remaining -}}
-      {{ partial "article-link/simple.html" . }}
-    {{- end -}}
-  </section>
-  {{- end }}
-
-  {{- if $isWide }}
-  </div>
-  {{- end }}
-
-  {{- if .Site.Params.homepage.showMoreLink | default false }}
-  <div class="mt-10 flex justify-center">
-    <a href="{{ (.Site.Params.homepage.showMoreLinkDest | default "/posts/") | relLangURL }}">
-      <button
-        class="bg-transparent hover:text-primary-500 prose dark:prose-invert font-semibold py-2 px-4 border border-primary-500 hover:border-transparent rounded">
-        {{ i18n "recent.show_more" | markdownify }}
-      </button>
-    </a>
-  </div>
-  {{- end }}
-{{- end -}}
-
-{{- /* ── Per-category rows ─────────────────────────────────── */ -}}
-{{- $rowCount := cond $isWide 5 3 -}}
-{{- with site.GetPage "/categories" -}}
-  {{- range .Pages -}}
-    {{- $catPage  := . -}}
-    {{- $nonDraft := where $catPage.Pages ".Params.draft" "ne" true -}}
-    {{- $nonDraft  = $nonDraft.ByDate.Reverse -}}
-    {{- if ge (len $nonDraft) $rowCount -}}
-      {{- $colorSlot := $catPage.Params.color | default "primary-500" -}}
-
-      {{- if $isWide }}
-      <div class="mt-wide mt-breakout">
-      {{- end }}
-      <div class="mt-10 mb-4 flex items-baseline justify-between">
-        <h2 class="cat-text--{{ $colorSlot }} text-2xl font-extrabold">{{ $catPage.Title }}</h2>
-        <a href="{{ $catPage.RelPermalink }}" class="text-sm text-neutral-500 hover:text-primary-500 dark:text-neutral-400 dark:hover:text-primary-400">Ver todos →</a>
-      </div>
-
-      {{- if $isCards }}
-      <section class="w-full grid gap-4 sm:grid-cols-2 md:grid-cols-3{{- if $isWide }} xl:grid-cols-4 2xl:grid-cols-5{{- end }}">
-        {{- range first $rowCount $nonDraft -}}
-          {{ partial "article-link/card.html" . }}
-        {{- end -}}
-      </section>
-      {{- else }}
-      <section class="space-y-10 w-full">
-        {{- range first $rowCount $nonDraft -}}
-          {{ partial "article-link/simple.html" . }}
-        {{- end -}}
-      </section>
-      {{- end }}
-
-      {{- if $isWide }}
-      </div>
-      {{- end }}
-
-    {{- end -}}
-  {{- end -}}
-{{- end -}}
+{{- /* ── Infinite scroll feed ────────────────────────────────── */ -}}
+{{- /*
+  Initial sentinel — fires immediately on load (hx-trigger="load").
+  The fragment at /posts/fragment/ replaces this div via outerHTML swap.
+  Each subsequent fragment page injects its own sentinel (hx-trigger="preempt")
+  watched by the IntersectionObserver defined in extend-head.html.
+*/ -}}
+<div
+  data-sentinel
+  hx-get="/posts/fragment.html"
+  hx-trigger="load"
+  hx-target="this"
+  hx-swap="outerHTML">
+</div>
 
 {{- /* ── Background blur overlay ─────────────────────────────── */ -}}
 {{ if .Site.Params.homepage.layoutBackgroundBlur | default false }}

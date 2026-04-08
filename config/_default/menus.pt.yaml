@@ -7,10 +7,10 @@ main:
     weight: 20
   - name: Lifestyle
     url: /categories/lifestyle/
-    weight: 25
+    weight: 30
   - name: Agenda
     url: /categories/agenda/
-    weight: 30
+    weight: 40
   - name: Colaboradores
     url: /authors/
     weight: 50

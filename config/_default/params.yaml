@@ -8,22 +8,15 @@ enableCodeCopy: false
 header:
   layout: fixed
 
-footer:
-  showMenu: false
-  showCopyright: true
-  showThemeAttribution: false
-  showAppearanceSwitcher: true
-  showScrollToTop: true
+# footer:
+#   showMenu: false
+#   showCopyright: true
+#   showThemeAttribution: false
+#   showAppearanceSwitcher: true
+#   showScrollToTop: true
 
 homepage:
   layout: hero
-  showRecent: true
-  showRecentItems: 9
-  cardView: true
-  cardViewScreenWidth: true
-  layoutBackgroundBlur: true
-  showMoreLink: true
-  showMoreLinkDest: /posts/
 
 article:
   showDate: true
@@ -37,7 +30,9 @@ article:
   heroStyle: big
 
 list:
-  showCards: true
+  # showHero: false
+  # heroStyle: big
+  # showCards: false
   showTableOfContents: false
   showSummary: true
   summaryLength: 0

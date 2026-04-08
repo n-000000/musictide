@@ -187,3 +187,75 @@
   #appearance-switcher, #appearance-switcher-mobile { display: none !important; }
 </style>
 {{- end }}
+
+{{- /* ── HTMX ─────────────────────────────────────────────────── */ -}}
+<script src="https://unpkg.com/htmx.org@2.0.4" integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+" crossorigin="anonymous"></script>
+
+{{- /* ── Infinite scroll — pre-emptive IntersectionObserver ──── */ -}}
+{{- /*
+  Watches [data-sentinel] elements. Fires the 'preempt' custom event
+  300px before the sentinel enters the viewport so HTMX fetches the
+  next fragment before the user reaches the bottom.
+*/ -}}
+<script>
+(function () {
+  function observe(el) {
+    new IntersectionObserver(function (entries, obs) {
+      if (!entries[0].isIntersecting) return;
+      obs.disconnect();
+      htmx.trigger(el, 'preempt');
+    }, { rootMargin: '0px 0px 300px 0px' }).observe(el);
+  }
+  function attachSentinel() {
+    // Always search from document — after outerHTML swap, e.detail.elt is
+    // the detached old sentinel, not the new content.
+    var el = document.querySelector('[data-sentinel]:not([data-observed])');
+    if (el) { el.dataset.observed = '1'; observe(el); }
+  }
+  function mergeMonths() {
+    // When a page boundary splits a month, the next fragment starts a new
+    // month group for the same month. Move its cards into the existing
+    // section and remove the duplicate heading + wrapper.
+    document.querySelectorAll('h3[data-month]').forEach(function (h3) {
+      var month = h3.dataset.month;
+      var existing = document.querySelector('section[data-month-cards="' + CSS.escape(month) + '"]');
+      var thisSection = h3.nextElementSibling;
+      if (existing && thisSection && existing !== thisSection) {
+        while (thisSection.firstChild) existing.appendChild(thisSection.firstChild);
+        var wrapper = h3.parentElement;
+        h3.remove();
+        thisSection.remove();
+        if (wrapper && wrapper.hasAttribute('data-month-group')) wrapper.remove();
+      }
+    });
+  }
+  document.addEventListener('htmx:afterSettle', function () { mergeMonths(); attachSentinel(); });
+  document.addEventListener('DOMContentLoaded', attachSentinel);
+})();
+</script>
+
+{{- /* ── Hashtag display — strips "#" prefix from #tags in article body ── */ -}}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  var container = document.querySelector('.article-content');
+  if (!container) return;
+
+  var pattern = /#([\p{L}\p{N}_\-]+)/gu;
+  var walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT);
+  var nodes = [];
+  while (walker.nextNode()) nodes.push(walker.currentNode);
+
+  nodes.forEach(function (node) {
+    if (!pattern.test(node.textContent)) return;
+    pattern.lastIndex = 0;
+
+    var frag = document.createDocumentFragment();
+    var parts = node.textContent.split(/(#[\p{L}\p{N}_\-]+)/gu);
+    parts.forEach(function (part) {
+      var m = part.match(/^#([\p{L}\p{N}_\-]+)$/u);
+      frag.appendChild(document.createTextNode(m ? m[1] : part));
+    });
+    node.parentNode.replaceChild(frag, node);
+  });
+});
+</script>

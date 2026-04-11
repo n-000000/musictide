@@ -8,9 +8,9 @@
   Cards grid below the hero, excluding the featured article.
 */ -}}
 {{- $siteStyle   := hugo.Data.style -}}
-{{- $contentStyle := $siteStyle.content_style | default "cards-wide" -}}
-{{- $isWide  := or (eq $contentStyle "cards-wide") (eq $contentStyle "list-wide") -}}
-{{- $isCards := or (eq $contentStyle "cards")      (eq $contentStyle "cards-wide") -}}
+{{- $isWide     := $siteStyle.wide_layout    | default false -}}
+{{- $isCards    := ne ($siteStyle.card_layout | default "cards") "list" -}}
+{{- $alignment  := $siteStyle.card_alignment | default "left" -}}
 
 {{- /* Latest non-draft post */ -}}
 {{- $posts  := where (where site.RegularPages "Section" "posts") ".Params.draft" "ne" true -}}

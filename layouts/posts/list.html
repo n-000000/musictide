@@ -43,10 +43,11 @@
   {{/* Article Grid */}}
   {{ if gt .Pages 0 }}
     {{- $siteStyle := hugo.Data.style -}}
-    {{- $contentStyle := $siteStyle.content_style | default "cards-wide" -}}
-    {{ $cardView := or (eq $contentStyle "cards") (eq $contentStyle "cards-wide") }}
-    {{ $cardViewScreenWidth := eq $contentStyle "cards-wide" }}
-    {{- $listScreenWidth := eq $contentStyle "list-wide" -}}
+    {{ $cardView := ne ($siteStyle.card_layout | default "cards") "list" }}
+    {{ $cardViewScreenWidth := $siteStyle.wide_layout | default false }}
+    {{- $listScreenWidth := $cardViewScreenWidth -}}
+    {{- $alignment      := $siteStyle.card_alignment      | default "left" -}}
+    {{- $categoryColor  := $siteStyle.card_category_color | default false -}}
     {{ $groupByYear := .Params.groupByYear | default (site.Params.list.groupByYear | default false) }}
     {{ $orderByWeight := .Params.orderByWeight | default (site.Params.list.orderByWeight | default false) }}
     {{ $groupByYear := and (not $orderByWeight) $groupByYear }}
@@ -85,9 +86,9 @@
               <h2 class="mt-12 mb-3 text-2xl font-bold text-neutral-700 first:mt-8 dark:text-neutral-300">
                 {{ .Key }}
               </h2>
-              <section class="w-full grid gap-4 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
+              <section class="mt-card-grid mt-card-grid--wide mt-cards--{{ $alignment }}">
                 {{ range .Pages }}
-                  {{ partial "article-link/card.html" . }}
+                  {{- $color := "" }}{{- if $categoryColor }}{{- with index .Params.categories 0 }}{{- $catPage := site.GetPage (printf "/categories/%s" (. | urlize)) }}{{- if $catPage }}{{- $color = $catPage.Params.color | default "primary-500" }}{{- end }}{{- end }}{{- end }}{{ partial "article-link/card.html" (dict "Page" . "categoryColor" $color) }}
                 {{ end }}
               </section>
             </div>
@@ -95,9 +96,9 @@
             <h2 class="mt-12 mb-3 text-2xl font-bold text-neutral-700 first:mt-8 dark:text-neutral-300">
               {{ .Key }}
             </h2>
-            <section class="w-full grid gap-4 sm:grid-cols-2 md:grid-cols-3">
+            <section class="mt-card-grid mt-cards--{{ $alignment }}">
               {{ range .Pages }}
-                {{ partial "article-link/card.html" . }}
+                {{- $color := "" }}{{- if $categoryColor }}{{- with index .Params.categories 0 }}{{- $catPage := site.GetPage (printf "/categories/%s" (. | urlize)) }}{{- if $catPage }}{{- $color = $catPage.Params.color | default "primary-500" }}{{- end }}{{- end }}{{- end }}{{ partial "article-link/card.html" (dict "Page" . "categoryColor" $color) }}
               {{ end }}
             </section>
           {{ end }}
@@ -107,31 +108,31 @@
       {{ else }}
         {{ if $cardViewScreenWidth }}
           <div class="mt-wide mt-breakout">
-            <section class="w-full grid gap-4 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
+            <section class="mt-card-grid mt-card-grid--wide mt-cards--{{ $alignment }}">
               {{ if not $orderByWeight }}
                 {{ range (.Paginate (.Pages.GroupByDate "2006")).PageGroups }}
                   {{ range .Pages }}
-                    {{ partial "article-link/card.html" . }}
+                    {{- $color := "" }}{{- if $categoryColor }}{{- with index .Params.categories 0 }}{{- $catPage := site.GetPage (printf "/categories/%s" (. | urlize)) }}{{- if $catPage }}{{- $color = $catPage.Params.color | default "primary-500" }}{{- end }}{{- end }}{{- end }}{{ partial "article-link/card.html" (dict "Page" . "categoryColor" $color) }}
                   {{ end }}
                 {{ end }}
               {{ else }}
                 {{ range (.Paginate (.Pages.ByWeight)).Pages }}
-                  {{ partial "article-link/card.html" . }}
+                  {{- $color := "" }}{{- if $categoryColor }}{{- with index .Params.categories 0 }}{{- $catPage := site.GetPage (printf "/categories/%s" (. | urlize)) }}{{- if $catPage }}{{- $color = $catPage.Params.color | default "primary-500" }}{{- end }}{{- end }}{{- end }}{{ partial "article-link/card.html" (dict "Page" . "categoryColor" $color) }}
                 {{ end }}
               {{ end }}
             </section>
           </div>
         {{ else }}
-          <section class="w-full grid gap-4 sm:grid-cols-2 md:grid-cols-3">
+          <section class="mt-card-grid mt-cards--{{ $alignment }}">
             {{ if not $orderByWeight }}
               {{ range (.Paginate (.Pages.GroupByDate "2006")).PageGroups }}
                 {{ range .Pages }}
-                  {{ partial "article-link/card.html" . }}
+                  {{- $color := "" }}{{- if $categoryColor }}{{- with index .Params.categories 0 }}{{- $catPage := site.GetPage (printf "/categories/%s" (. | urlize)) }}{{- if $catPage }}{{- $color = $catPage.Params.color | default "primary-500" }}{{- end }}{{- end }}{{- end }}{{ partial "article-link/card.html" (dict "Page" . "categoryColor" $color) }}
                 {{ end }}
               {{ end }}
             {{ else }}
               {{ range (.Paginate (.Pages.ByWeight)).Pages }}
-                {{ partial "article-link/card.html" . }}
+                {{- $color := "" }}{{- if $categoryColor }}{{- with index .Params.categories 0 }}{{- $catPage := site.GetPage (printf "/categories/%s" (. | urlize)) }}{{- if $catPage }}{{- $color = $catPage.Params.color | default "primary-500" }}{{- end }}{{- end }}{{- end }}{{ partial "article-link/card.html" (dict "Page" . "categoryColor" $color) }}
               {{ end }}
             {{ end }}
           </section>

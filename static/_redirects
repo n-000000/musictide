@@ -1,0 +1,30 @@
+# ──────────────────────────────────────────────────────────────
+# Route access control
+# Accessible: /  |  /categories/*/  |  /authors/  |  /posts/*/  |  /admin/
+# Everything else returns 404.
+# ──────────────────────────────────────────────────────────────
+
+# Tags — no public pages
+/tags           /404.html  404
+/tags/*         /404.html  404
+
+# Events — internal taxonomy, no public pages yet
+/events         /404.html  404
+/events/*       /404.html  404
+
+# Series — not used publicly
+/series         /404.html  404
+/series/*       /404.html  404
+
+# Categories index (individual /categories/*/ term pages are NOT blocked)
+/categories     /404.html  404
+/categories/    /404.html  404
+
+# Posts section index — individual /posts/*/ articles are NOT blocked
+/posts          /404.html  404
+/posts/         /404.html  404
+/posts/page/*   /404.html  404
+
+# Individual author profile pages — the /authors/ list is NOT blocked
+/authors/:slug  /404.html  404
+/authors/:slug/ /404.html  404

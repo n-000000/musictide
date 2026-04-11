@@ -11,36 +11,42 @@
   so outerHTML swaps don't cause nesting.
 */ -}}
 {{- $siteStyle    := hugo.Data.style -}}
-{{- $contentStyle := $siteStyle.content_style | default "cards-wide" -}}
-{{- $isWide  := or (eq $contentStyle "cards-wide") (eq $contentStyle "list-wide") -}}
-{{- $isCards := or (eq $contentStyle "cards")      (eq $contentStyle "cards-wide") -}}
+{{- $isWide         := $siteStyle.wide_layout         | default false -}}
+{{- $isCards        := ne ($siteStyle.card_layout | default "cards") "list" -}}
+{{- $alignment      := $siteStyle.card_alignment      | default "left" -}}
+{{- $categoryColor  := $siteStyle.card_category_color | default false -}}
 
 {{- $posts := where (where site.RegularPages "Section" "posts") ".Params.draft" "ne" true -}}
 {{- $posts  = $posts.ByDate.Reverse -}}
+{{- /* Exclude the hero article (first/latest post shown in the hero banner) */ -}}
+{{- $hero  := index $posts 0 -}}
+{{- if $hero }}{{- $posts = where $posts "Permalink" "ne" $hero.Permalink -}}{{- end -}}
 {{- $pager := .Paginate $posts 5 -}}
 
-{{- if $isCards }}
-  {{- range $pager.Pages.GroupByDate "January 2006" }}
-{{- if $isWide }}<div data-month-group class="mt-wide mt-breakout">{{- end }}
-<h3 data-month="{{ .Key }}" class="mt-10 mb-4 text-2xl font-extrabold text-neutral-700 dark:text-neutral-300">{{ .Key }}</h3>
-<section data-month-cards="{{ .Key }}" class="w-full grid gap-4 sm:grid-cols-2 md:grid-cols-3{{- if $isWide }} xl:grid-cols-4 2xl:grid-cols-5{{- end }}">
-    {{- range .Pages }}
-  {{ partial "article-link/card.html" . }}
+{{- range $pager.Pages.GroupByDate "January 2006" }}
+  {{- if $isWide }}<div data-month-group class="mt-wide mt-breakout">{{- end }}
+    <h3 data-month="{{ .Key }}" class="mt-10 mb-4 text-2xl font-extrabold text-neutral-700 dark:text-neutral-300">{{ .Key }}</h3>
+    {{- if $isCards }}    
+      <section data-month-cards="{{ .Key }}" class="mt-card-grid{{- if $isWide }} mt-card-grid--wide{{- end }} mt-cards--{{ $alignment }}">
+        {{- range .Pages }}
+          {{- $color := "" -}}
+          {{- if $categoryColor -}}
+            {{- with index .Params.categories 0 -}}
+              {{- $catPage := site.GetPage (printf "/categories/%s" (. | urlize)) -}}
+              {{- if $catPage -}}{{- $color = $catPage.Params.color | default "primary-500" -}}{{- end -}}
+            {{- end -}}
+          {{- end -}}
+          {{ partial "article-link/card.html" (dict "Page" . "categoryColor" $color) }}
+        {{- end }}
+      </section>
+    {{- else }}
+      <section data-month-cards="{{ .Key }}" class="space-y-10 w-full">
+        {{- range .Pages }}
+          {{ partial "article-link/simple.html" . }}
+        {{- end }}
+      </section>
     {{- end }}
-</section>
-{{- if $isWide }}</div>{{- end }}
-  {{- end }}
-{{- else }}
-  {{- range $pager.Pages.GroupByDate "January 2006" }}
-{{- if $isWide }}<div data-month-group class="mt-wide mt-breakout">{{- end }}
-<h3 data-month="{{ .Key }}" class="mt-10 mb-4 text-2xl font-extrabold text-neutral-700 dark:text-neutral-300">{{ .Key }}</h3>
-<section data-month-cards="{{ .Key }}" class="space-y-10 w-full">
-    {{- range .Pages }}
-  {{ partial "article-link/simple.html" . }}
-    {{- end }}
-</section>
-{{- if $isWide }}</div>{{- end }}
-  {{- end }}
+  {{- if $isWide }}</div>{{- end }}
 {{- end }}
 
 {{- if $pager.HasNext }}

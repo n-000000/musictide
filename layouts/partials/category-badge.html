@@ -9,7 +9,8 @@
 */ -}}
 {{- $cats := .Params.categories -}}
 {{- if $cats -}}
-  {{- $first := index $cats 0 -}}
+  {{- /* Handle both string ("Cultura") and array (["Cultura"]) formats */ -}}
+  {{- $first := cond (reflect.IsSlice $cats) (index $cats 0) $cats -}}
   {{- $slug := $first | urlize -}}
   {{- $catPage := site.GetPage (printf "/categories/%s" $slug) -}}
   {{- $colorSlot := "primary-500" -}}

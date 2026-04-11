@@ -1,0 +1,56 @@
+{{- /*
+  categories/term.fragment.html — bare HTML fragment for HTMX infinite scroll
+  on category listing pages.
+
+  Standalone (no baseof). Same structure as list.fragment.html but scoped
+  to the current taxonomy term's pages.
+*/ -}}
+{{- $style         := hugo.Data.style -}}
+{{- $isWide        := $style.wide_layout         | default false -}}
+{{- $isCards       := ne ($style.card_layout | default "cards") "list" -}}
+{{- $alignment     := $style.card_alignment      | default "left" -}}
+{{- $categoryColor := $style.card_category_color | default false -}}
+
+{{- $colorSlot := .Params.color | default "primary-500" -}}
+{{- $cardColor := cond $categoryColor $colorSlot "" -}}
+
+{{- $posts := where .Pages ".Params.draft" "ne" true -}}
+{{- $posts  = $posts.ByDate.Reverse -}}
+{{- /* Exclude the hero article (first/latest post shown above the feed) */ -}}
+{{- $hero  := index $posts 0 -}}
+{{- if $hero }}{{- $posts = where $posts "Permalink" "ne" $hero.Permalink -}}{{- end -}}
+{{- $pager := .Paginate $posts 5 -}}
+
+{{- if $isCards }}
+  {{- range $pager.Pages.GroupByDate "January 2006" }}
+{{- if $isWide }}<div data-month-group class="mt-wide mt-breakout">{{- end }}
+<h3 data-month="{{ .Key }}" class="mt-10 mb-4 text-2xl font-extrabold text-neutral-700 dark:text-neutral-300">{{ .Key }}</h3>
+<section data-month-cards="{{ .Key }}" class="mt-card-grid{{- if $isWide }} mt-card-grid--wide{{- end }} mt-cards--{{ $alignment }}">
+    {{- range .Pages }}
+  {{ partial "article-link/card.html" (dict "Page" . "categoryColor" $cardColor) }}
+    {{- end }}
+</section>
+{{- if $isWide }}</div>{{- end }}
+  {{- end }}
+{{- else }}
+  {{- range $pager.Pages.GroupByDate "January 2006" }}
+{{- if $isWide }}<div data-month-group class="mt-wide mt-breakout">{{- end }}
+<h3 data-month="{{ .Key }}" class="mt-10 mb-4 text-2xl font-extrabold text-neutral-700 dark:text-neutral-300">{{ .Key }}</h3>
+<section data-month-cards="{{ .Key }}" class="space-y-10 w-full">
+    {{- range .Pages }}
+  {{ partial "article-link/simple.html" . }}
+    {{- end }}
+</section>
+{{- if $isWide }}</div>{{- end }}
+  {{- end }}
+{{- end }}
+
+{{- if $pager.HasNext }}
+<div
+  data-sentinel
+  hx-get="{{ $pager.Next.URL }}"
+  hx-trigger="preempt"
+  hx-target="this"
+  hx-swap="outerHTML">
+</div>
+{{- end }}

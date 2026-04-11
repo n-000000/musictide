@@ -8,10 +8,11 @@
 */ -}}
 
 {{- $page := .Page -}}
+{{- $categoryColor := .categoryColor | default "" -}}
 
 {{- /* Resolve featured image via shared partial */ -}}
 {{- $featuredURL := "" -}}
-{{- if not .Params.hideFeatureImage -}}
+{{- if not $page.Params.hideFeatureImage -}}
   {{- $img := partial "resolve-feature-image.html" (dict
     "Page"       $page
     "Globs"      (slice "*feature*" "*cover*" "*thumbnail*")
@@ -22,7 +23,7 @@
 {{- end -}}
 
 <article
-  class="article-link--card relative min-h-full min-w-full overflow-hidden rounded-lg border border-neutral-300 dark:border-neutral-600">
+  class="article-link--card relative min-h-full min-w-full overflow-hidden rounded-lg border border-neutral-300 dark:border-neutral-600{{- with $categoryColor }} cat-bg--{{ . }}{{- end }}">
   {{ with $featuredURL }}
     <div class="flex-none relative overflow-hidden thumbnail_card">
       <img
@@ -33,7 +34,7 @@
         class="not-prose absolute inset-0 w-full h-full object-cover">
     </div>
   {{ end }}
-  {{ if and .Draft .Site.Params.article.showDraftLabel }}
+  {{ if and $page.Draft $page.Site.Params.article.showDraftLabel }}
     <span class="absolute top-0 right-0 m-2">
       {{ partial "badge.html" (i18n "article.draft" | emojify) }}
     </span>
@@ -48,8 +49,8 @@
         {{ end }}
         class="not-prose before:absolute before:inset-0 decoration-primary-500 dark:text-neutral text-xl font-bold text-neutral-800 hover:underline hover:underline-offset-2">
         <h2>
-          {{ .Title | emojify }}
-          {{ if .Params.externalUrl }}
+          {{ $page.Title | emojify }}
+          {{ if $page.Params.externalUrl }}
             <span class="cursor-default align-top text-xs text-neutral-400 dark:text-neutral-500">
               <span class="rtl:hidden">&#8599;</span>
               <span class="ltr:hidden">&#8598;</span>
@@ -59,11 +60,11 @@
       </a>
     </header>
     <div class="text-sm text-neutral-500 dark:text-neutral-400">
-      {{ partial "article-meta/basic.html" . }}
+      {{ partial "article-meta/basic.html" $page }}
     </div>
-    {{ if .Params.showSummary | default (.Site.Params.list.showSummary | default false) }}
+    {{ if $page.Params.showSummary | default ($page.Site.Params.list.showSummary | default false) }}
       <div class="article-link__summary prose dark:prose-invert mt-1 line-clamp-3">
-        {{ .Summary | plainify }}
+        {{ $page.Summary | plainify }}
       </div>
     {{ end }}
   </div>

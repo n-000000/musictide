@@ -27,7 +27,7 @@ collections:
     fields:
 
       - label: Categoria
-        name: category
+        name: categories
         widget: relation
         collection: categories
         search_fields: [title]
@@ -36,6 +36,17 @@ collections:
         dropdown_threshold: 0
         required: false
         hint: "Categoria do artigo"
+
+      - label: Evento
+        name: event
+        widget: relation
+        collection: events
+        search_fields: [title]
+        value_field: title
+        display_fields: [title]
+        dropdown_threshold: 0
+        required: false
+        hint: "Evento associado (ex: Vagos Metal Fest 2025). Crie o evento primeiro em Eventos."
 
       - label: Título
         name: title
@@ -135,6 +146,21 @@ collections:
         name: draft
         widget: boolean
         default: true
+
+  # ── EVENTOS ──────────────────────────────────────────────────
+  - name: events
+    label: Eventos
+    label_singular: Evento
+    folder: content/events
+    create: true
+    path: "{{slug}}/_index"
+    identifier_field: title
+    fields:
+
+      - label: Nome
+        name: title
+        widget: string
+        hint: "Ex: Vagos Metal Fest 2025, Sonicblast 2025, Primavera Sound 2026"
 
   # ── CATEGORIAS ────────────────────────────────────────────────
   - name: categories
@@ -325,9 +351,9 @@ collections:
             name: homepage_layout
             widget: select
             options:
-              - { label: "Página (artigos recentes)", value: page }
+              # - { label: "Página (artigos recentes)", value: page }
               - { label: "Hero (último artigo em destaque)", value: hero }
-              - { label: "Background (imagem de fundo + perfil)", value: background }
+              # - { label: "Background (imagem de fundo + perfil)", value: background }
               - { label: "Card (perfil + imagem ao lado)", value: card }
               - { label: "Perfil (centrado)", value: profile }
             default: page
@@ -339,13 +365,33 @@ collections:
             required: false
             hint: "Fundo para os layouts Hero e Background (usado quando o último artigo não tem imagem)"
 
-          - label: Estilo de Apresentação do Conteudo
-            name: content_style
+          - label: Estilo de Apresentação
+            name: card_layout
             widget: select
             options:
-              - { label: "Cards largura total", value: cards-wide }
-              - { label: "Cards (grelha)", value: cards }
-              - { label: "Lista largura total", value: list-wide }
+              - { label: "Cartões", value: cards }
               - { label: "Lista", value: list }
-            default: cards-wide
-            hint: "Controla o estilo de apresentação em todas as páginas: hero, galeria e listagens"
+            default: cards
+            hint: "Cartões ou lista em todas as páginas"
+
+          - label: Largura Total
+            name: wide_layout
+            widget: boolean
+            default: true
+            hint: "Ativado: conteúdo ocupa a largura total. Desativado: conteúdo centrado com margens"
+
+          - label: Alinhamento dos Cartões
+            name: card_alignment
+            widget: select
+            options:
+              - { label: "Esquerda", value: left }
+              - { label: "Centro", value: center }
+              - { label: "Direita", value: right }
+            default: left
+            hint: "Alinhamento dos cartões em linhas incompletas"
+
+          - label: Cor de Categoria nos Cartões
+            name: card_category_color
+            widget: boolean
+            default: false
+            hint: "Colorir o fundo de cada cartão com a cor da sua categoria"

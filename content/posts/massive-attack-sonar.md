@@ -1,5 +1,4 @@
 ---
-categories: [Cultura]
 title: 'Massive Attack: A Escuridão Programada'
 date: 2025-06-13T23:30:00+01:00
 featureimage: https://picsum.photos/seed/massiveattack/1200/600
@@ -16,6 +15,7 @@ tags:
   - triphopp
   - electronic
   - sonar
+categories: [Desporto]
 ---
 
 Ninguém faz silêncio como os Massive Attack. 

@@ -9,8 +9,7 @@
 {{- $colorScheme := $style.colorScheme | default "dark-metal" -}}
 {{- $headingFont := $style.heading_font | default "system" -}}
 {{- $bodyFont := $style.body_font | default "system" -}}
-{{- $contentStyle := $style.content_style | default "cards-wide" -}}
-{{- $isWide := or (eq $contentStyle "cards-wide") (eq $contentStyle "list-wide") -}}
+{{- $isWide := $style.wide_layout | default false -}}
 {{- $showThemeToggle := $style.show_theme_toggle | default true -}}
 
 {{- /* ── Color scheme ──────────────────────────────────────────── */ -}}
@@ -231,6 +230,13 @@
   }
   document.addEventListener('htmx:afterSettle', function () { mergeMonths(); attachSentinel(); });
   document.addEventListener('DOMContentLoaded', attachSentinel);
+  document.addEventListener('htmx:afterSwap', function (e) {
+    if (e.detail.target && e.detail.target.id === 'main-content') {
+      window.scrollTo(0, 0);
+      var toggle = document.getElementById('mobile-menu-toggle');
+      if (toggle) toggle.checked = false;
+    }
+  });
 })();
 </script>
 

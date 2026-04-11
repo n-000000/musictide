@@ -1,5 +1,8 @@
 mediaBaseURL: https://pub-576ea11202f543d0bf28d36ef63d18ff.r2.dev
 
+logo: logo_fixed.png
+disableTextInHeader: true
+
 defaultAppearance: dark
 autoSwitchAppearance: true
 enableSearch: true
@@ -21,11 +24,11 @@ homepage:
 article:
   showDate: true
   showAuthor: false
-  showReadingTime: true
+  showReadingTime: false
   showWordCount: false
   showTableOfContents: false
   showEdit: false
-  showTaxonomies: true
+  showTaxonomies: false
   showHero: true
   heroStyle: big
 

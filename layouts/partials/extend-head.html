@@ -187,6 +187,22 @@
 </style>
 {{- end }}
 
+{{- /* ── Logo sizing override (Blowfish caps at max-w-20/max-h-20 = 80px) ── */ -}}
+<style>
+  img.logo { max-width: 220px !important; max-height: 2.5rem !important; width: auto; }
+</style>
+
+{{- /* ── medium-zoom init (Blowfish's footer.html is suppressed, so init it here) ── */ -}}
+{{- if not site.Params.disableImageZoom }}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  if (typeof mediumZoom === 'function') {
+    mediumZoom('img:not(.nozoom)', { margin: 24, background: 'rgba(0,0,0,0.5)', scrollOffset: 0 });
+  }
+});
+</script>
+{{- end }}
+
 {{- /* ── HTMX ─────────────────────────────────────────────────── */ -}}
 <script src="https://unpkg.com/htmx.org@2.0.4" integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+" crossorigin="anonymous"></script>
 

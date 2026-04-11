@@ -10,7 +10,7 @@ site_url: https://musictide.pages.dev
 
 media_libraries:
   cloudflare_r2:
-    access_key_id: 0bd0a95fb73f463fa74a8cfd52ae8ec6
+    access_key_id: e04ffceffcb454326996be5a9af00865
     bucket: musictide-media
     account_id: 43220b81420989e7198287bd4559a701
     public_url: https://pub-576ea11202f543d0bf28d36ef63d18ff.r2.dev
@@ -72,11 +72,38 @@ collections:
         required: false
         hint: "Legenda da imagem de capa"
 
-      - label: Autor
-        name: author
-        widget: string
+      - label: Texto
+        name: credit_texto
+        widget: relation
+        collection: authors
+        search_fields: [title]
+        value_field: title
+        display_fields: [title]
+        dropdown_threshold: 0
         required: false
-        hint: "Deixe em branco se for o autor principal"
+        hint: "Autor do texto"
+
+      - label: Fotos
+        name: credit_fotos
+        widget: relation
+        collection: authors
+        search_fields: [title]
+        value_field: title
+        display_fields: [title]
+        dropdown_threshold: 0
+        required: false
+        hint: "Autor das fotografias"
+
+      - label: Vídeo
+        name: credit_video
+        widget: relation
+        collection: authors
+        search_fields: [title]
+        value_field: title
+        display_fields: [title]
+        dropdown_threshold: 0
+        required: false
+        hint: "Autor do vídeo (se aplicável)"
 
       - label: Texto
         name: body

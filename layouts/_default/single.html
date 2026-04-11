@@ -24,11 +24,18 @@
       <div class="mt-1 mb-6 text-base text-neutral-500 dark:text-neutral-400 print:hidden">
         {{ partial "article-meta/basic.html" (dict "context" . "scope" "single") }}
       </div>
-      {{ with .Params.author }}
+      {{- $ct := .Params.credit_texto -}}
+      {{- $cf := .Params.credit_fotos -}}
+      {{- $cv := .Params.credit_video -}}
+      {{- if or $ct $cf $cv }}
         <p class="mt-1 mb-4 text-sm text-neutral-500 dark:text-neutral-400 print:hidden">
-          Por <a href="{{ site.LanguagePrefix }}/authors/#{{ . | urlize }}" class="hover:text-primary-500 dark:hover:text-primary-400 transition-colors">{{ . }}</a>
+          {{- if $ct }}Texto: {{ $ct }}{{ end -}}
+          {{- if and $ct (or $cf $cv) }} · {{ end -}}
+          {{- if $cf }}Fotos: {{ $cf }}{{ end -}}
+          {{- if and $cf $cv }} · {{ end -}}
+          {{- if $cv }}Vídeo: {{ $cv }}{{ end -}}
         </p>
-      {{ end }}
+      {{- end }}
       {{ if not (.Params.showAuthorBottom | default (site.Params.article.showAuthorBottom | default false)) }}
         {{ template "SingleAuthor" . }}
       {{ end }}

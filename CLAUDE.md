@@ -312,7 +312,7 @@ Non-secret identifiers needed for operations:
 |------|-------|
 | Cloudflare Account ID | `43220b81420989e7198287bd4559a701` |
 | Cloudflare Workers subdomain | `leftfield` |
-| R2 Access Key ID | `0bd0a95fb73f463fa74a8cfd52ae8ec6` |
+| R2 Access Key ID | `e04ffceffcb454326996be5a9af00865` |
 | R2 Public URL | `https://pub-576ea11202f543d0bf28d36ef63d18ff.r2.dev` |
 | GitHub OAuth App Client ID | `Ov23liqMUtOJYdVl58nr` |
 | Auth Worker URL | `https://sveltia-cms-auth.leftfield.workers.dev` |

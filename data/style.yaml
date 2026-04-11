@@ -1,11 +1,11 @@
 site_name: ''
 show_theme_toggle: false
-colorScheme: goth
+colorScheme: one-light
 heading_font: bebas-neue
 body_font: lato
 homepage_layout: hero
 homepage_image: ''
-card_layout: cards
+card_layout: list
 wide_layout: false
-card_alignment: center
+card_alignment: right
 card_category_color: true

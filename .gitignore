@@ -1,3 +1,6 @@
+# Scraper output
+tools/output/
+
 # Worktrees
 .worktrees/
 

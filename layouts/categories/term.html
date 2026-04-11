@@ -1,44 +1,54 @@
 {{- /*
-  categories/term.html — article listing for a single category.
-  Reads content_style from data/style.yaml to match site-wide wide/constrained setting.
+  categories/term.html — category listing page with a hero showing the latest
+  article in that category. Same hero rules as the homepage.
 */ -}}
 {{ define "main" }}
-  {{- $style       := hugo.Data.style -}}
-  {{- $contentStyle := $style.content_style | default "cards-wide" -}}
-  {{- $isWide  := or (eq $contentStyle "cards-wide") (eq $contentStyle "list-wide") -}}
-  {{- $isCards := or (eq $contentStyle "cards")      (eq $contentStyle "cards-wide") -}}
-
+  {{- $style     := hugo.Data.style -}}
+  {{- $isWide    := $style.wide_layout | default false -}}
   {{- $colorSlot := .Params.color | default "primary-500" -}}
 
-<header class="mt-5 mb-8">
-  <h1 class="cat-text--{{ $colorSlot }} mt-5 text-4xl font-extrabold">{{ .Title }}</h1>
-</header>
+  {{- $posts  := where .Pages ".Params.draft" "ne" true -}}
+  {{- $posts   = $posts.ByDate.Reverse -}}
+  {{- $latest := index $posts 0 -}}
 
-{{ if gt (len .Pages) 0 }}
+{{ if $latest }}
+  {{- $img     := partial "resolve-feature-image.html" (dict "Page" $latest "Globs" (slice "*feature*" "*cover*" "*thumbnail*")) -}}
+  {{- $heroURL := $img.URL -}}
 
-  {{- if $isWide }}
-  <div class="mt-wide mt-breakout">
-  {{- end }}
+  <article class="max-w-full">
+    <div class="relative">
+      {{- if $isWide }}
+      <div class="mt-wide mt-breakout">
+      {{- else }}
+      <div>
+      {{- end }}
+        <a href="{{ $latest.Permalink }}" class="mt-hero-frame block relative no-underline shadow-xl">
+          {{- if $heroURL }}
+          <div class="absolute inset-0">
+            <img
+              class="nozoom mt-img-flush h-full w-full object-cover"
+              src="{{ $heroURL }}"
+              role="presentation">
+          </div>
+          <div class="mt-hero-grad absolute inset-0"></div>
+          <div class="mt-hero-vignette absolute inset-0"></div>
+          {{- end }}
+          <div class="hero-content">
+            {{ partial "category-badge.html" $latest }}
+            <h1 class="hero-title text-neutral-100">{{ $latest.Title }}</h1>
+          </div>
+        </a>
+      </div>
+    </div>
+  </article>
 
-  {{- if $isCards }}
-  <section class="w-full grid gap-4 sm:grid-cols-2 md:grid-cols-3{{- if $isWide }} xl:grid-cols-4 2xl:grid-cols-5{{- end }}">
-    {{- range .Pages.ByDate.Reverse -}}
-      {{ partial "article-link/card.html" . }}
-    {{- end -}}
-  </section>
-  {{- else }}
-  <section class="space-y-10 w-full">
-    {{- range .Pages.ByDate.Reverse -}}
-      {{ partial "article-link/simple.html" . }}
-    {{- end -}}
-  </section>
-  {{- end }}
-
-  {{- if $isWide }}
+  <div
+    data-sentinel
+    hx-get="{{ .RelPermalink }}fragment.html"
+    hx-trigger="load"
+    hx-target="this"
+    hx-swap="outerHTML">
   </div>
-  {{- end }}
-
-  {{ partial "pagination.html" . }}
 
 {{ else }}
   <section class="mt-10 prose dark:prose-invert">

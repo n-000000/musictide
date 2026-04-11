@@ -1,5 +1,4 @@
 ---
-categories: [Cultura]
 title: 'Deftones: Sacramento Aterra em Lisboa'
 date: 2025-07-05T22:00:00+01:00
 featureimage: https://picsum.photos/seed/deftones/1200/600
@@ -17,6 +16,7 @@ tags:
   - alternativemetal
   - voa
   - shoegaze
+categories: [Desporto]
 ---
 
 Chino Moreno não envelhece. Ou melhor — envelhece como o vinho, com mais profundidade a cada ano. 

@@ -1,5 +1,4 @@
 ---
-categories: [Cultura]
 title: 'Baroness: Cor e Caos em Doses Iguais'
 date: 2025-08-01T20:30:00+01:00
 featureimage: https://picsum.photos/seed/baroness/1200/600
@@ -15,6 +14,7 @@ tags:
   - progressivemetal
   - sonicblast
   - sludge
+categories: [Desporto]
 ---
 
 John Baizley pinta quadros com a guitarra e os Baroness são a prova de que o metal pode ser simultaneamente brutal e belo. 

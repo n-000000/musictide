@@ -1,5 +1,4 @@
 ---
-categories: [Cultura]
 title: 'Blind Zero: Os Nossos São os Melhores'
 date: 2025-07-05T19:00:00+01:00
 featureimage: https://picsum.photos/seed/blindzero/1200/600
@@ -16,6 +15,7 @@ tags:
   - portugues
   - voa
   - alternativerock
+categories: [Desporto]
 ---
 
 Os Blind Zero merecem um palco maior. Ponto final.  Há uma razão pela qual esta banda de Lisboa continua a crescer depois de trinta anos — a música não envelhece porque nunca esteve amarrada a uma época específica. 

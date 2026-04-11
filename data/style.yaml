@@ -3,6 +3,9 @@ show_theme_toggle: false
 colorScheme: goth
 heading_font: bebas-neue
 body_font: lato
-homepage_layout: page
+homepage_layout: hero
 homepage_image: ''
-content_style: cards
+card_layout: cards
+wide_layout: false
+card_alignment: center
+card_category_color: true

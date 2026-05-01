@@ -55,12 +55,17 @@
     document.addEventListener('htmx:afterSettle', function () {
       var pool = activeAds();
       if (!pool.length) return;
-      var unpopulated = document.querySelectorAll('[data-ad-inject]:not([data-ad-populated])');
-      unpopulated.forEach(function (el) {
-        var ad = pool[Math.floor(Math.random() * pool.length)];
-        fillSlot(el, ad);
-        el.setAttribute('data-ad-populated', '');
-      });
+      var el = document.querySelector('[data-ad-inject]:not([data-ad-populated])');
+      if (el) {
+        var prev = el.previousElementSibling;
+        if (prev && prev.classList.contains('mt-ad-slot')) {
+          el.setAttribute('data-ad-populated', '');
+        } else {
+          var ad = pool[Math.floor(Math.random() * pool.length)];
+          fillSlot(el, ad);
+          el.setAttribute('data-ad-populated', '');
+        }
+      }
     });
   }
 }());

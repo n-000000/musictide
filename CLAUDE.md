@@ -180,8 +180,8 @@ Five CMS collections, all live and operational:
 | Collection | CMS name | Storage | Purpose |
 |------------|----------|---------|---------|
 | Articles | `posts` | `content/posts/` | Photography-heavy event posts. Fields: event (relation), title, date, featureimage, author, body (text widget), gallery (multi-image), draft |
-| Ads | `ads` | `content/ads/` | Paid placement ads. Fields: title, creative_image, click_through_url, active_from/until, notes, draft |
-| Events | `events` | `content/events/` | Lookup collection for the article event relation picker. Fields: title only |
+| Ads | `ads` | `content/ads/` | Paid placement ads. Fields: title, creative_image, click_through_url, active_from/until, destaque (bool), notes, draft |
+| Events | `events` | `content/events/` | Lookup collection for the article event relation picker. Fields: title only. `content/events/` has no files — collection exists in CMS config only. |
 | Contributors | `authors` | `content/authors/` | Contributor profiles. Fields: title, photo, bio, email, instagram, draft |
 | Site Style | `settings` | `data/style.yaml` | File collection (single file). Palette + font selection |
 
@@ -189,7 +189,7 @@ Five CMS collections, all live and operational:
 
 **Tags** are not a CMS field — they are extracted automatically from `#hashtags` in the body text by the preSave hook.
 
-**Ads note:** Ads are paid placement (transactional, not per-click). JS interleaving into listing pages is a future phase — CMS just creates and stores them.
+**Ads note:** Ads are paid placement (transactional, not per-click). Two slots implemented: destaque (below hero on homepage + category pages) and feed (injected between HTMX scroll batches). The `destaque: true` field flags an ad for the below-hero position; only one should be active at a time (JS picks the first match). Mock ads `ariel-destaque.md` and `skip-mock.md` exist in `content/ads/` — remove before launch.
 
 ---
 
@@ -204,8 +204,12 @@ These files override Blowfish defaults:
 | `layouts/index.html` | Homepage entry point — reads `hugo.Data.style.homepage_layout` and dispatches to the appropriate `home/*.html` partial. Overrides Blowfish's version which reads from `params.yaml`. |
 | `layouts/partials/home/hero.html` | Custom hero layout showing latest non-draft article (featureimage as background, title, event badge, "Ler artigo" CTA). Falls back to `data/style.yaml homepage_image`. |
 | `layouts/partials/home/background.html` | Copy of Blowfish's background layout extended to also read `hugo.Data.style.homepage_image` as image source. |
-| `layouts/partials/extend-head.html` | Dynamically loads scheme CSS from `assets/css/schemes/<colorScheme>.css` via Hugo asset pipeline (minified + fingerprinted). Also loads Google Fonts and gallery CSS media queries. |
+| `layouts/partials/extend-head.html` | Dynamically loads scheme CSS, Google Fonts, gallery CSS, ad JSON blob (`ads-data.html`), and the IntersectionObserver + HTMX infinite-scroll setup (600px preemptive rootMargin, month-group merge logic). |
 | `layouts/partials/extend-footer.html` | Client-side JS that strips `#` from hashtags in rendered article content |
+| `layouts/partials/ads-data.html` | Serialises all non-draft ads from `content/ads/` to a `<script id="mt-ads-data" type="application/json">` blob in `<head>`. Includes title, image, url, destaque, from/until timestamps. Read by `ad-slot.html` JS at visit time for date filtering. |
+| `layouts/partials/ad-slot.html` | Renders the hidden `#mt-ad-destaque` card + inline IIFE. On load: filters active ads by date, fills + reveals destaque slot. On `htmx:afterSettle`: fills one `[data-ad-inject]` feed slot per event, skipping if the previous sibling is already an `.mt-ad-slot`. URL scheme validated via `safeUrl()` (http/https only). |
+| `layouts/posts/list.fragment.html` | HTMX infinite-scroll fragment for homepage. Includes `[data-ad-inject]` feed placeholder only when `$pager.HasNext` is true (not on the last page). |
+| `layouts/categories/term.fragment.html` | Same as above for category listing pages. |
 
 ---
 
@@ -232,9 +236,11 @@ All fields switchable via CMS at Definições → Estilo Visual.
 
 ## Mock Content
 
-9 mock articles exist in `content/posts/` using Picsum placeholder images: moonspell-vagos, gojira-sonicblast, deftones-voa, pixies-colorama, sepultura-vagos, massive-attack-sonar, baroness-sonicblast, health-sumol, blindzero-voa. Plus `fu-manchu` and `slayer` created via CMS during testing.
+Mock articles have been replaced with real content uploaded by the photographer via CMS. Two mock ads remain for testing:
+- `content/ads/ariel-destaque.md` — destaque mock (orange placeholder image)
+- `content/ads/skip-mock.md` — feed slot mock (blue placeholder image)
 
-These are placeholder content for development. Remove before going live with real content.
+Remove both before launch.
 
 ---
 
@@ -256,15 +262,13 @@ These are placeholder content for development. Remove before going live with rea
 
 - **Visual design** — Final aesthetic not chosen. n0xx is actively iterating on color scheme, typography, and homepage layout. Current working config: dark-metal + Bebas Neue + Playfair. Hero and background layouts built but not battle-tested with real article content.
 - **Bilingual authoring workflow** — EN translations for articles. Translation-by-filename is set up but no EN content exists yet. Sveltia i18n per-field config not yet added.
-- **Ads display** — Client-side JS to interleave active ads into article listing pages.
-- **Events taxonomy templates** — `content/events/` exists as a CMS lookup collection but has no custom Hugo taxonomy templates (no banner/description display on event pages).
 - **Custom domain** — still on `musictide.pages.dev`.
 - **Video hosting strategy** — not started.
 
 ### Cleanup
 
 - **`workers/r2-upload/`** — the original R2 upload Worker. Redundant since the R2 proxy Worker (`workers/r2-proxy/`) replaced it. Can be removed from the repo and undeployed.
-- **Mock content** — 11 test articles to remove before launch.
+- **Mock ads** — `content/ads/ariel-destaque.md` and `content/ads/skip-mock.md` to remove before launch.
 
 ### Future consideration
 
@@ -299,6 +303,7 @@ Condensed timeline of key milestones:
 | 2026-03-23 | R2 proxy Worker built (`workers/r2-proxy/`). Fetch interceptor in `index.html`. Date-based upload prefixes. GitHub OAuth auth on uploads. Daily orphan cleanup cron. |
 | 2026-03-24 | Styling system (5 palettes, fonts, CSS custom properties via `data/style.yaml`). Homepage article grid. Article gallery partial. Hashtag extraction preSave hook. Mock articles. Body field changed to text widget. All committed and pushed. |
 | 2026-03-25 | Color scheme migration: replaced homebrew CSS custom property inline blocks in `extend-head.html` with native Blowfish scheme CSS files (`assets/css/schemes/*.css`). Article layout fix: removed `max-w-prose` from header/content/footer. Homepage layout switching via `data/style.yaml` (local `layouts/index.html` override). Custom hero layout showing latest article. Background layout override. 8 color schemes, 10 heading fonts, 6 body fonts. CMS local_backend support via `yarn cms`. |
+| 2026-05-01 | Ads display implemented: `destaque` CMS field added; `ads-data.html` embeds non-draft ads as JSON blob in `<head>`; `ad-slot.html` reveals destaque card below hero + injects feed ads between HTMX scroll batches via `htmx:afterSettle`; URL XSS sanitised via `safeUrl()`; adjacent-ad guard prevents duplicates from month-merge race. Hero mobile portrait fix: `80svh` on `max-width:640px portrait`. HTMX sentinel rootMargin increased to 600px. Mock articles confirmed replaced by real photographer content. |
 
 Design docs live in `docs/superpowers/specs/` and `docs/superpowers/plans/` — useful for understanding rationale behind decisions but may be outdated relative to current code.
 

@@ -45,6 +45,7 @@
   {{- end }}
 {{- end }}
 
+{{- if $pager.HasNext }}
 <div data-ad-inject class="mt-ad-slot" hidden>
   <p class="mt-ad-label">Publicidade</p>
   <a class="mt-ad-card" href="" target="_blank" rel="noopener noreferrer">
@@ -52,6 +53,7 @@
     <p class="mt-ad-title"></p>
   </a>
 </div>
+{{- end }}
 
 {{- if $pager.HasNext }}
 <div

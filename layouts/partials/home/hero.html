@@ -88,7 +88,9 @@
   </div>
 </article>
 
-{{- /* ── Infinite scroll feed ────────────────────────────────── */ -}}
+  {{ partial "ad-slot.html" . }}
+
+  {{- /* ── Infinite scroll feed ────────────────────────────────── */ -}}
 {{- /*
   Initial sentinel — fires immediately on load (hx-trigger="load").
   The fragment at /posts/fragment/ replaces this div via outerHTML swap.

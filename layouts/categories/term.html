@@ -42,6 +42,8 @@
     </div>
   </article>
 
+  {{ partial "ad-slot.html" . }}
+
   <div
     data-sentinel
     hx-get="{{ .RelPermalink }}fragment.html"

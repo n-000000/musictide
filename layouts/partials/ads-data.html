@@ -1,0 +1,21 @@
+{{- /*
+  ads-data.html — serialises non-draft ads to a JSON blob.
+  Consumed by ad-slot.html JS at visit time for date filtering.
+*/ -}}
+{{- $ads := slice -}}
+{{- range where (where site.RegularPages "Section" "ads") ".Params.draft" "ne" true -}}
+  {{- $ad := dict
+    "title"    .Title
+    "image"    (.Params.creative_image | default "")
+    "url"      (.Params.click_through_url | default "")
+    "destaque" (.Params.destaque | default false)
+  -}}
+  {{- with .Params.active_from -}}
+    {{- $ad = merge $ad (dict "from" ((time .).Format "2006-01-02T15:04:05Z07:00")) -}}
+  {{- end -}}
+  {{- with .Params.active_until -}}
+    {{- $ad = merge $ad (dict "until" ((time .).Format "2006-01-02T15:04:05Z07:00")) -}}
+  {{- end -}}
+  {{- $ads = $ads | append $ad -}}
+{{- end -}}
+<script type="application/json" id="mt-ads-data">{{ $ads | jsonify | safeJS }}</script>

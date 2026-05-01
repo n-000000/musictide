@@ -23,6 +23,9 @@
 {{- $cssMain := resources.Get "css/musictide.css" | resources.Minify | resources.Fingerprint -}}
 <link rel="stylesheet" href="{{ $cssMain.RelPermalink }}" integrity="{{ $cssMain.Data.Integrity }}">
 
+{{- /* ── Ad data — JSON blob consumed by ad-slot.html JS ─────── */ -}}
+{{ partial "ads-data.html" . }}
+
 {{- /* ── Google Fonts ─────────────────────────────────────────── */ -}}
 {{- $fonts := dict
   "system"        (dict "stack" "ui-sans-serif, system-ui, sans-serif"                 "url" "")

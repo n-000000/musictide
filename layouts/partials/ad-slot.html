@@ -1,0 +1,59 @@
+{{- /*
+  ad-slot.html — two responsibilities:
+  1. Renders the destaque card (hidden until JS reveals it).
+  2. Inline script handles destaque reveal on load + feed slot
+     injection via htmx:afterSettle for each scroll batch.
+  Called once per page from hero.html and term.html.
+*/ -}}
+<div id="mt-ad-destaque" class="mt-ad-slot" hidden>
+  <p class="mt-ad-label">Publicidade</p>
+  <a class="mt-ad-card" href="" target="_blank" rel="noopener noreferrer">
+    <img class="mt-ad-img" src="" alt="">
+    <p class="mt-ad-title"></p>
+  </a>
+</div>
+<script>
+(function () {
+  function activeAds() {
+    try {
+      var data = JSON.parse(document.getElementById('mt-ads-data').textContent);
+    } catch (e) { return []; }
+    var now = Date.now();
+    return data.filter(function (ad) {
+      var from  = ad.from  ? new Date(ad.from).getTime()  : 0;
+      var until = ad.until ? new Date(ad.until).getTime() : Infinity;
+      return now >= from && now <= until;
+    });
+  }
+
+  function fillSlot(el, ad) {
+    el.querySelector('.mt-ad-card').href         = ad.url;
+    el.querySelector('.mt-ad-img').src           = ad.image;
+    el.querySelector('.mt-ad-img').alt           = ad.title;
+    el.querySelector('.mt-ad-title').textContent = ad.title;
+    el.removeAttribute('hidden');
+  }
+
+  // Destaque — reveal immediately
+  var active   = activeAds();
+  var destaque = active.filter(function (ad) { return ad.destaque; })[0];
+  if (destaque) {
+    fillSlot(document.getElementById('mt-ad-destaque'), destaque);
+  }
+
+  // Feed slots — populated after each HTMX batch settles
+  if (!window._mtAdListenerAttached) {
+    window._mtAdListenerAttached = true;
+    document.addEventListener('htmx:afterSettle', function () {
+      var pool = activeAds();
+      if (!pool.length) return;
+      var unpopulated = document.querySelectorAll('[data-ad-inject]:not([data-ad-populated])');
+      unpopulated.forEach(function (el) {
+        var ad = pool[Math.floor(Math.random() * pool.length)];
+        fillSlot(el, ad);
+        el.setAttribute('data-ad-populated', '');
+      });
+    });
+  }
+}());
+</script>

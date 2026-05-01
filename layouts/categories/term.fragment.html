@@ -38,7 +38,7 @@
 <h3 data-month="{{ .Key }}" class="mt-10 mb-4 text-2xl font-extrabold text-neutral-700 dark:text-neutral-300">{{ .Key }}</h3>
 <section data-month-cards="{{ .Key }}" class="space-y-10 w-full">
     {{- range .Pages }}
-  {{ partial "article-link/simple.html" . }}
+  {{ partial "article-link/simple.html" (dict "Page" . "categoryColor" $cardColor) }}
     {{- end }}
 </section>
 {{- if $isWide }}</div>{{- end }}

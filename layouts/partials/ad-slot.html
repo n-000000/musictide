@@ -35,17 +35,18 @@
 
   function fillSlot(el, ad) {
     el.querySelector('.mt-ad-card').href         = safeUrl(ad.url);
-    el.querySelector('.mt-ad-img').src           = ad.image;
+    el.querySelector('.mt-ad-img').src           = safeUrl(ad.image);
     el.querySelector('.mt-ad-img').alt           = ad.title;
     el.querySelector('.mt-ad-title').textContent = ad.title;
     el.removeAttribute('hidden');
   }
 
   // Destaque — reveal immediately
-  var active   = activeAds();
-  var destaque = active.filter(function (ad) { return ad.destaque; })[0];
-  if (destaque) {
-    fillSlot(document.getElementById('mt-ad-destaque'), destaque);
+  var active     = activeAds();
+  var destaque   = active.filter(function (ad) { return ad.destaque; })[0];
+  var destaqueEl = document.getElementById('mt-ad-destaque');
+  if (destaque && destaqueEl) {
+    fillSlot(destaqueEl, destaque);
   }
 
   // Feed slots — populated after each HTMX batch settles

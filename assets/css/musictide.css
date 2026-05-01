@@ -41,6 +41,13 @@ html {
   overflow: hidden;
 }
 
+@media (max-width: 640px) and (orientation: portrait) {
+  .mt-hero-frame {
+    aspect-ratio: auto;
+    height: 80svh;
+  }
+}
+
 /* ── Hero overlays ───────────────────────────────────────── */
 .mt-hero-grad {
   background: linear-gradient(

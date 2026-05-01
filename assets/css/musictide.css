@@ -263,3 +263,54 @@ header > div {
 .cat-text--secondary-300{color:rgb(var(--color-secondary-300))}
 .cat-text--secondary-500{color:rgb(var(--color-secondary-500))}
 .cat-text--secondary-700{color:rgb(var(--color-secondary-700))}
+
+/* ═══════════════════════════════════════════════════════════
+   AD SLOTS — destaque (below-hero) and feed (after scroll batch)
+   ═══════════════════════════════════════════════════════════ */
+.mt-ad-slot {
+  max-width: 320px;
+  margin: 1.5rem auto;
+}
+
+.mt-ad-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: rgb(var(--color-neutral-500));
+  margin: 0 0 0.4rem;
+  text-align: center;
+}
+
+.mt-ad-card {
+  display: block;
+  background: rgb(var(--color-neutral-200));
+  text-decoration: none;
+  opacity: 1;
+  transition: opacity 0.15s ease;
+}
+
+.dark .mt-ad-card {
+  background: rgb(var(--color-neutral-800));
+}
+
+.mt-ad-card:hover {
+  opacity: 0.85;
+}
+
+.mt-ad-img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+}
+
+.mt-ad-title {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8rem;
+  color: rgb(var(--color-neutral-800));
+  margin: 0;
+}
+
+.dark .mt-ad-title {
+  color: rgb(var(--color-neutral-100));
+}

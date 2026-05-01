@@ -164,6 +164,12 @@ collections:
         required: false
         hint: "Data de fim de exibição"
 
+      - label: Destaque
+        name: destaque
+        widget: boolean
+        default: false
+        hint: "Anúncio de destaque — aparece imediatamente abaixo do hero. Apenas um anúncio deve ter esta opção activa de cada vez."
+
       - label: Notas Internas
         name: notes
         widget: text

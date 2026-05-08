@@ -18,7 +18,7 @@ gallery:
   - https://pub-576ea11202f543d0bf28d36ef63d18ff.r2.dev/posts/2026/05/08/_AG_2224.jpg
   - https://pub-576ea11202f543d0bf28d36ef63d18ff.r2.dev/posts/2026/05/08/_AG_2221.jpg
   - https://pub-576ea11202f543d0bf28d36ef63d18ff.r2.dev/posts/2026/05/08/Fu_Manchu_King_of_the_road.mp4
-draft: true
+draft: false
 tags:
   - al-qasar
   - thomas

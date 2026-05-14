@@ -133,7 +133,7 @@ async function handleCallback(request, env) {
       email: googleUser.email,
       avatar: googleUser.picture || '',
     },
-  }), { expirationTtl: 30 });
+  }), { expirationTtl: 60 });
 
   return new Response(null, {
     status: 302,

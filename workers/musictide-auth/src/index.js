@@ -27,7 +27,7 @@ const GOOGLE_AUTH_URL = 'https://accounts.google.com/o/oauth2/v2/auth';
 const GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token';
 const GOOGLE_USERINFO_URL = 'https://www.googleapis.com/oauth2/v2/userinfo';
 
-const ADMIN_URL = 'https://musictide.pages.dev/admin/';
+const ADMIN_URL = 'https://musictide.pages.dev/admin/auth-relay.html';
 const CORS_ORIGIN = 'https://musictide.pages.dev';
 
 function isAllowedDomain(siteId, allowedDomains) {

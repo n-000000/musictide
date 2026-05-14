@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="pt">
+  <head>
+    <meta charset="utf-8" />
+    <title>A autenticar...</title>
+    <script>
+      (function () {
+        var relayId = new URLSearchParams(window.location.search).get('relay');
+
+        if (!relayId || !window.opener) {
+          document.getElementById('msg').textContent = 'Erro: parâmetros em falta. Feche esta janela.';
+          return;
+        }
+
+        fetch('https://musictide-auth.leftfield.workers.dev/relay/' + relayId)
+          .then(function (r) { return r.ok ? r.json() : Promise.reject('relay_' + r.status); })
+          .then(function (data) {
+            try { localStorage.setItem('mt-current-user', JSON.stringify(data.userData)); } catch (e) {}
+            window.opener.postMessage({ type: 'mt-user-data', user: data.userData }, '*');
+            window.opener.postMessage('authorization:github:success:' + data.pat, '*');
+          })
+          .catch(function (err) {
+            window.opener.postMessage('authorization:github:error:' + err, '*');
+          })
+          .finally(function () { window.close(); });
+      })();
+    </script>
+  </head>
+  <body>
+    <p id="msg" style="font-family:sans-serif;padding:2rem">A autenticar, aguarde...</p>
+  </body>
+</html>

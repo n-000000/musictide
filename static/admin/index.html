@@ -19,33 +19,6 @@
     </style>
 
     <script>
-      // ── Auth relay handler ────────────────────────────────────────
-      // Google's COOP header severs window.opener while the popup visits
-      // accounts.google.com, making direct postMessage impossible. Instead,
-      // the auth Worker redirects the popup back here with ?relay=<id>.
-      // We fetch the payload from the Worker and postMessage to the opener
-      // (same-origin now, so COOP is not an issue), then close the popup.
-      (function () {
-        var relayId = new URLSearchParams(window.location.search).get('relay');
-        if (!relayId || !window.opener) return;
-
-        history.replaceState(null, '', '/admin/');
-
-        fetch('https://musictide-auth.leftfield.workers.dev/relay/' + relayId)
-          .then(function (r) { return r.ok ? r.json() : Promise.reject('relay_' + r.status); })
-          .then(function (data) {
-            try { localStorage.setItem('mt-current-user', JSON.stringify(data.userData)); } catch (e) {}
-            window.opener.postMessage({ type: 'mt-user-data', user: data.userData }, '*');
-            window.opener.postMessage('authorization:github:success:' + data.pat, '*');
-          })
-          .catch(function (err) {
-            window.opener.postMessage('authorization:github:error:' + err, '*');
-          })
-          .finally(function () { window.close(); });
-      })();
-    </script>
-
-    <script>
       // ── Pre-seed R2 credentials ────────────────────────────────────
       // Sveltia prompts for the R2 secret key on each new browser session.
       // Since our fetch interceptor strips AWS auth and uses GitHub OAuth

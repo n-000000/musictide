@@ -1,0 +1,10 @@
+name = "musictide-auth"
+main = "src/index.js"
+compatibility_date = "2024-09-23"
+
+kv_namespaces = [
+  { binding = "USERS", id = "1f6af293b61b4e989bc65e3c94ea21b3" }
+]
+
+[vars]
+ALLOWED_DOMAINS = "musictide.pages.dev,localhost:1313"

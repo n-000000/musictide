@@ -129,13 +129,15 @@ codeberg  → ssh://git@codeberg.org/ngon/musictide.git (backup mirror, run yarn
 
 ## CMS (Sveltia)
 
-Sveltia CMS is the content management UI, served at `/admin/`. The photographer logs in via GitHub OAuth, creates/edits content, and Sveltia commits directly to GitHub — which triggers a Cloudflare Pages rebuild.
+Sveltia CMS is the content management UI, served at `/admin/`. Users log in with Google; a shared GitHub service account PAT is issued to Sveltia on successful auth. Sveltia commits directly to GitHub — which triggers a Cloudflare Pages rebuild.
 
 ### Entry Point
 
 `static/admin/index.html` — loads Sveltia from CDN (pinned at `@sveltia/cms@0.149.1`). Also contains:
-- **R2 proxy fetch interceptor** — intercepts Sveltia's S3 API calls to R2, rewrites them to go through the proxy Worker instead. Strips AWS Signature V4 auth, injects GitHub Bearer token from the CMS session, passes `X-Collection` header.
-- **Dummy R2 credential pre-seeding** — Sveltia prompts for an R2 secret key per session. Since the fetch interceptor handles auth via GitHub OAuth, the actual R2 key is irrelevant. A dummy value is pre-seeded in `localStorage` to suppress the prompt.
+- **R2 proxy fetch interceptor** — intercepts Sveltia's S3 API calls to R2, rewrites them to go through the proxy Worker instead. Strips AWS Signature V4 auth, injects GitHub Bearer token (service account PAT) from the CMS session, passes `X-Collection` header.
+- **Dummy R2 credential pre-seeding** — Sveltia prompts for an R2 secret key per session. Since the fetch interceptor handles auth, the actual R2 key is irrelevant. A dummy value is pre-seeded in `localStorage` to suppress the prompt.
+- **User metadata listener** — listens for `mt-user-data` postMessage from `musictide-auth` and stores `{ name, login, email, avatar }` in `localStorage` as `mt-current-user`.
+- **Commit author injection** — fetch interceptor intercepts GitHub Contents API `PUT`/`DELETE` calls and injects the real user's `name`/`email` as the git commit `author` field, so `git log` shows the actual contributor rather than the service account.
 - **preSave hashtag extraction** — extracts `#hashtags` from article body text into the `tags` array on every save. Body is the source of truth (tags replaced, not merged). The `#` prefix is stripped from rendered output by client-side JS in `extend-footer.html`.
 - **Stock photo CSS hack** — hides Picsum/Unsplash buttons in the media picker via CSS (`display: none !important`). Sveltia has no config option to disable them.
 
@@ -145,7 +147,32 @@ Sveltia CMS is the content management UI, served at `/admin/`. The photographer 
 
 ### Auth
 
-`sveltia-cms-auth` Worker at `https://sveltia-cms-auth.leftfield.workers.dev` — GitHub OAuth proxy. This is the official Sveltia-recommended approach for non-Netlify deployments. The GitHub OAuth App callback points here.
+`musictide-auth` Worker at `https://musictide-auth.leftfield.workers.dev` — Google Sign-In proxy for Sveltia. Lives in `workers/musictide-auth/`.
+
+**How it works:**
+- Sveltia opens a popup to `/auth?provider=github&site_id=<domain>`
+- Worker serves an HTML page with a Google Sign-In button (GIS SDK — `renderButton`)
+- User clicks → Google's FedCM / account picker appears inline (no second popup on Chrome/Android)
+- GIS returns a signed JWT credential; Worker's `/verify` endpoint validates it with Google's tokeninfo API
+- Email is looked up in the `USERS` KV namespace (key = Google email, value = `{"name":"...","login":"..."}`)
+- On success: postMessages `{ type: 'mt-user-data', user: {...} }` then `authorization:github:success:{"token":"<PAT>"}` to `window.opener`, then closes
+- On failure: shows "Acesso negado" error in the popup
+
+**KV user registry (`USERS` namespace, ID `1f6af293b61b4e989bc65e3c94ea21b3`):**
+- Key: Google email address
+- Value: `{"name":"Display Name","login":"author-slug"}`
+- `name` is used as the git commit author name
+- `login` is the `content/authors/` slug (stored, not yet actively wired to anything)
+- Manage via Cloudflare dashboard or: `npx wrangler kv key put "email@gmail.com" '{"name":"Name","login":"slug"}' --namespace-id 1f6af293b61b4e989bc65e3c94ea21b3 --remote`
+
+**Secrets** (set via `npx wrangler secret put <NAME> --name musictide-auth`):
+- `GOOGLE_CLIENT_ID` — Google Cloud Console OAuth 2.0 client
+- `GITHUB_SERVICE_ACCOUNT_PAT` — classic PAT with `repo` scope on n0xx's account
+
+**Google Cloud Console requirements:**
+- OAuth consent screen: published to production (not Testing)
+- Authorised JavaScript origins: `https://musictide-auth.leftfield.workers.dev`
+- When custom domain is added: also add domain as authorised JS origin and update `ALLOWED_DOMAINS` in `wrangler.toml`
 
 ### R2 Proxy Worker
 
@@ -155,7 +182,7 @@ What it does:
 - **PutObject** — prepends `{collection}/YYYY/MM/DD/` to the key (based on current date)
 - **ListObjectsV2** — returns objects from ±1 day only, scoped to the current collection
 - **DeleteObject / HeadObject** — pass through
-- **Auth** — verifies the GitHub OAuth token has push access to `n-000000/musictide` (no static secrets)
+- **Auth** — verifies the Bearer token (service account PAT issued by `musictide-auth`) has push access to `n-000000/musictide`
 - **Daily cron (03:00 UTC)** — deletes orphaned R2 objects not referenced in any content markdown file. Fetches the full repo tree from GitHub's public API and cross-references R2 keys.
 
 ### Known Sveltia Limitations
@@ -251,7 +278,7 @@ Remove both before launch.
 - **`.worktrees/` is gitignored** — worktrees live at `.worktrees/<branch-name>`.
 - **Sveltia media cache bug:** Media list is fetched once per session. Uploading via one image field then opening another field's picker won't show the new file until page reload.
 - **`/pt/` returns 200** — Hugo generates aliases. This is expected, not a bug.
-- **`local_backend: true` only activates on localhost** — safe to commit. In production (musictide.pages.dev) it is silently ignored and the GitHub OAuth backend is used as normal. Requires `yarn cms` running alongside `yarn watch` to be useful.
+- **`local_backend: true` only activates on localhost** — safe to commit. In production (musictide.pages.dev) it is silently ignored and the Google auth backend is used as normal. Requires `yarn cms` running alongside `yarn watch` to be useful.
 - **`yarn cms` installs on first run** — `npx netlify-cms-proxy-server` downloads the package on first invocation; subsequent runs use the npx cache.
 
 ---
@@ -267,11 +294,12 @@ Remove both before launch.
 
 ### Cleanup
 
-- **`workers/r2-upload/`** — the original R2 upload Worker. Redundant since the R2 proxy Worker (`workers/r2-proxy/`) replaced it. Can be removed from the repo and undeployed.
 - **Mock ads** — `content/ads/ariel-destaque.md` and `content/ads/skip-mock.md` to remove before launch.
 
 ### Future consideration
 
+- **CMS user management via Sveltia** — Add a `users` collection to `config.yml` (files in `data/cms-users/`, fields: `name`, `email`, `login`). A GitHub Actions workflow fires on push to `data/cms-users/**` and syncs those files to the `USERS` KV namespace via `wrangler kv key put`. Lets the photographer manage CMS users without developer involvement. Needs a Cloudflare API token in GitHub secrets.
+- **`login` field wiring** — `login` in the KV user record is stored in `mt-current-user` localStorage but not yet used. Intended to link a logged-in user to their `content/authors/` profile. Wire up when CMS user management is implemented.
 - **Block-based content model** — Evaluated on 2026-03-22 as "Path B" (see `docs/superpowers/specs/2026-03-22-cms-assessment-and-paths-forward.md`). Would replace the single body text field with a list of typed blocks (text, image, gallery) giving the photographer layout control. Not implemented — current approach (body text + separate gallery field) was chosen for simplicity. Revisit if photographer needs more editorial control.
 - **CMS replacement** — Tina CMS (keeps Hugo, better editor) or Nuxt + Nuxt Studio (full rebuild, best editor UX) were evaluated and deferred. See same assessment doc.
 
@@ -304,6 +332,7 @@ Condensed timeline of key milestones:
 | 2026-03-24 | Styling system (5 palettes, fonts, CSS custom properties via `data/style.yaml`). Homepage article grid. Article gallery partial. Hashtag extraction preSave hook. Mock articles. Body field changed to text widget. All committed and pushed. |
 | 2026-03-25 | Color scheme migration: replaced homebrew CSS custom property inline blocks in `extend-head.html` with native Blowfish scheme CSS files (`assets/css/schemes/*.css`). Article layout fix: removed `max-w-prose` from header/content/footer. Homepage layout switching via `data/style.yaml` (local `layouts/index.html` override). Custom hero layout showing latest article. Background layout override. 8 color schemes, 10 heading fonts, 6 body fonts. CMS local_backend support via `yarn cms`. |
 | 2026-05-01 | Ads display implemented: `destaque` CMS field added; `ads-data.html` embeds non-draft ads as JSON blob in `<head>`; `ad-slot.html` reveals destaque card below hero + injects feed ads between HTMX scroll batches via `htmx:afterSettle`; URL XSS sanitised via `safeUrl()`; adjacent-ad guard prevents duplicates from month-merge race. Hero mobile portrait fix: `80svh` on `max-width:640px portrait`. HTMX sentinel rootMargin increased to 600px. Mock articles confirmed replaced by real photographer content. |
+| 2026-05-14 | Google Sign-In auth shipped. Replaced `sveltia-cms-auth` (GitHub OAuth) with `musictide-auth` Worker (Google GIS SDK + Cloudflare KV user registry). Users log in with Google; Worker verifies JWT, looks up email in KV, issues shared GitHub service account PAT to Sveltia. Commit author injection added to `index.html` fetch interceptor — `git log` shows real contributor name/email. `workers/r2-upload/` deleted (was already redundant). Google OAuth app published to production. |
 
 Design docs live in `docs/superpowers/specs/` and `docs/superpowers/plans/` — useful for understanding rationale behind decisions but may be outdated relative to current code.
 
@@ -319,11 +348,10 @@ Non-secret identifiers needed for operations:
 | Cloudflare Workers subdomain | `leftfield` |
 | R2 Access Key ID | `e04ffceffcb454326996be5a9af00865` |
 | R2 Public URL | `https://pub-576ea11202f543d0bf28d36ef63d18ff.r2.dev` |
-| GitHub OAuth App Client ID | `Ov23liqMUtOJYdVl58nr` |
-| Auth Worker URL | `https://sveltia-cms-auth.leftfield.workers.dev` |
+| Auth Worker URL | `https://musictide-auth.leftfield.workers.dev` |
+| Auth Worker KV namespace ID | `1f6af293b61b4e989bc65e3c94ea21b3` |
 | R2 Proxy Worker URL | `https://musictide-media-proxy.leftfield.workers.dev` |
-| R2 Upload Worker URL (redundant) | `https://musictide-media-upload.leftfield.workers.dev` |
 | GitHub repo | `n-000000/musictide` (public) |
 | Cloudflare Pages URL | `https://musictide.pages.dev` |
 
-Secrets (R2 Secret Access Key, GitHub OAuth Client Secret) are in the developer's password manager and/or Cloudflare Worker secrets. Never committed to the repo.
+Secrets (R2 Secret Access Key, `GOOGLE_CLIENT_ID`, `GITHUB_SERVICE_ACCOUNT_PAT`) are in the developer's password manager and/or Cloudflare Worker secrets. Never committed to the repo.

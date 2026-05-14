@@ -37,11 +37,26 @@
     </script>
 
     <script>
+      // ── User metadata listener ────────────────────────────────────
+      // musictide-auth sends user identity before the Sveltia auth message.
+      // We store it here so the fetch interceptor can inject author metadata
+      // into GitHub commit API calls, preserving git log attribution.
+      window.addEventListener('message', function (e) {
+        if (e.data && e.data.type === 'mt-user-data') {
+          try {
+            localStorage.setItem('mt-current-user', JSON.stringify(e.data.user));
+          } catch (err) { /* ignore — commit author will fall back to service account */ }
+        }
+      });
+    </script>
+
+    <script>
       // ── R2 Proxy Interceptor ─────────────────────────────────────
       // Redirects Sveltia's S3 API calls from R2 to our proxy Worker.
       // PUT uploads use presigned URLs (direct-to-R2) to avoid Worker
       // body size limits. All other ops are proxied through the Worker.
-      // No secrets in this file — auth piggybacks on GitHub OAuth.
+      // Also intercepts GitHub Contents API commits to inject the real
+      // user's name/email as the git commit author.
       (function () {
         const R2_HOST = '43220b81420989e7198287bd4559a701.r2.cloudflarestorage.com';
         const PROXY_HOST = 'musictide-media-proxy.leftfield.workers.dev';
@@ -127,6 +142,27 @@
 
         window.fetch = function (input, init) {
           let url = typeof input === 'string' ? input : input instanceof Request ? input.url : String(input);
+
+          // Inject commit author from stored Google identity into GitHub Contents API calls.
+          // Covers both create (PUT) and delete (DELETE) operations.
+          var method = (init && init.method) ? init.method.toUpperCase() : 'GET';
+          if (
+            url.includes('api.github.com/repos') &&
+            url.includes('/contents/') &&
+            (method === 'PUT' || method === 'DELETE') &&
+            init && init.body
+          ) {
+            try {
+              var stored = localStorage.getItem('mt-current-user');
+              if (stored) {
+                var cmUser = JSON.parse(stored);
+                var commitBody = JSON.parse(init.body);
+                commitBody.author = { name: cmUser.name, email: cmUser.email };
+                var newInit = Object.assign({}, init, { body: JSON.stringify(commitBody) });
+                return _fetch.apply(window, [input, newInit]);
+              }
+            } catch (e) { /* fall through — commit proceeds without explicit author */ }
+          }
 
           if (url.includes(R2_HOST)) {
             var method = (init && init.method) || 'GET';

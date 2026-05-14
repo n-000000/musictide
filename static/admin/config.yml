@@ -2,7 +2,7 @@ backend:
   name: github
   repo: n-000000/musictide
   branch: main
-  base_url: https://sveltia-cms-auth.leftfield.workers.dev
+  base_url: https://musictide-auth.leftfield.workers.dev
 
 local_backend: true
 

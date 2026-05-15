@@ -10,11 +10,12 @@
  * Endpoints:
  *   GET /auth?provider=github&site_id=<domain>  — serve GIS login page
  *   POST /verify                                 — verify GIS credential JWT
+ *   POST /sync-users                             — GitHub push webhook → KV sync
  *   OPTIONS *                                    — CORS preflight
  *   GET /                                        — health check
  *
  * Required secrets (wrangler secret put):
- *   GOOGLE_CLIENT_ID, GITHUB_SERVICE_ACCOUNT_PAT
+ *   GOOGLE_CLIENT_ID, GITHUB_SERVICE_ACCOUNT_PAT, WEBHOOK_SECRET
  *   (GOOGLE_CLIENT_SECRET no longer needed — GIS uses client-side flow)
  *
  * KV (USERS binding): key = google email, value = {"name":"...","login":"..."}
@@ -321,6 +322,10 @@ export default {
 
     if (pathname === '/verify' && request.method === 'POST') {
       return handleVerify(request, env);
+    }
+
+    if (pathname === '/sync-users' && request.method === 'POST') {
+      return handleSyncUsers(request, env);
     }
 
     if (pathname === '/') return new Response('musictide-auth ok', { status: 200 });

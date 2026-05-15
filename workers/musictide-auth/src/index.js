@@ -48,6 +48,7 @@ async function syncUsers(env) {
   if (!listRes.ok) throw new Error('GitHub API ' + listRes.status);
 
   const files = await listRes.json();
+  if (!Array.isArray(files)) throw new Error('Unexpected GitHub response for directory listing');
 
   const desired = new Map();
   await Promise.all(
@@ -55,14 +56,20 @@ async function syncUsers(env) {
       .filter(f => f.type === 'file' && f.name.endsWith('.json'))
       .map(async f => {
         const r = await fetch(f.download_url, { headers: { 'User-Agent': 'musictide-auth' } });
-        if (!r.ok) return;
+        if (!r.ok) throw new Error('Failed to fetch ' + f.name + ': ' + r.status);
         const data = await r.json();
         if (data.email) desired.set(data.email, { name: data.name || '', login: data.login || '' });
       })
   );
 
-  const { keys } = await env.USERS.list();
-  const current = new Set(keys.map(k => k.name));
+  let allKeys = [];
+  let cursor;
+  do {
+    const page = await env.USERS.list({ cursor });
+    allKeys.push(...page.keys);
+    cursor = page.list_complete ? undefined : page.cursor;
+  } while (cursor);
+  const current = new Set(allKeys.map(k => k.name));
 
   await Promise.all([
     ...[...current].filter(k => !desired.has(k)).map(k => env.USERS.delete(k)),

@@ -36,9 +36,9 @@ Fields:
 
 Files are stored as `data/cms-users/<name-slug>.json`. Hugo does not read these files.
 
-### 2. Auth Worker — `/webhook` Endpoint
+### 2. Auth Worker — `/sync-users` Endpoint
 
-New `POST /webhook` handler added to `workers/musictide-auth/src/index.js`.
+New `POST /sync-users` handler added to `workers/musictide-auth/src/index.js`.
 
 **Flow:**
 
@@ -66,7 +66,7 @@ After deploying the Worker:
 1. Generate a random webhook secret (e.g. `openssl rand -hex 32`).
 2. `npx wrangler secret put WEBHOOK_SECRET --name musictide-auth` → paste the value.
 3. In GitHub repo settings → Webhooks → Add webhook:
-   - **Payload URL:** `https://musictide-auth.leftfield.workers.dev/webhook`
+   - **Payload URL:** `https://musictide-auth.leftfield.workers.dev/sync-users`
    - **Content type:** `application/json`
    - **Secret:** same value
    - **Events:** Just the `push` event

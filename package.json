@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "watch": "hugo server",
-    "build": "hugo --gc --minify --cleanDestinationDir",
+    "build": "hugo --gc --minify",
     "update": "hugo mod get -u && hugo mod tidy",
     "mirror": "git push codeberg main",
     "cms": "npx netlify-cms-proxy-server"

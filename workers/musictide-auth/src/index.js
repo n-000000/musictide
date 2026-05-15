@@ -39,6 +39,37 @@ function jsonResponse(data, status = 200) {
   });
 }
 
+async function syncUsers(env) {
+  const listRes = await fetch(
+    'https://api.github.com/repos/n-000000/musictide/contents/data/cms-users',
+    { headers: { 'User-Agent': 'musictide-auth' } }
+  );
+  if (listRes.status === 404) return; // directory not yet created — nothing to sync
+  if (!listRes.ok) throw new Error('GitHub API ' + listRes.status);
+
+  const files = await listRes.json();
+
+  const desired = new Map();
+  await Promise.all(
+    files
+      .filter(f => f.type === 'file' && f.name.endsWith('.json'))
+      .map(async f => {
+        const r = await fetch(f.download_url, { headers: { 'User-Agent': 'musictide-auth' } });
+        if (!r.ok) return;
+        const data = await r.json();
+        if (data.email) desired.set(data.email, { name: data.name || '', login: data.login || '' });
+      })
+  );
+
+  const { keys } = await env.USERS.list();
+  const current = new Set(keys.map(k => k.name));
+
+  await Promise.all([
+    ...[...current].filter(k => !desired.has(k)).map(k => env.USERS.delete(k)),
+    ...[...desired.entries()].map(([email, rec]) => env.USERS.put(email, JSON.stringify(rec))),
+  ]);
+}
+
 async function handleAuth(request, env) {
   const url = new URL(request.url);
   const siteId = url.searchParams.get('site_id') || '';

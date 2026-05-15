@@ -1,11 +1,14 @@
 {{- /*
   categories/term.html — category listing page with a hero showing the latest
   article in that category. Same hero rules as the homepage.
+
+  Wrapped in data-pagefind-ignore="all" — category pages are accessed via the
+  nav bar; they should not appear as Pagefind search results.
 */ -}}
 {{ define "main" }}
+  <div data-pagefind-ignore="all">
   {{- $style     := hugo.Data.style -}}
   {{- $isWide    := $style.wide_layout | default false -}}
-  {{- $colorSlot := .Params.color | default "primary-500" -}}
 
   {{- $posts  := where .Pages ".Params.draft" "ne" true -}}
   {{- $posts   = $posts.ByDate.Reverse -}}
@@ -59,5 +62,5 @@
     </p>
   </section>
 {{ end }}
-
+  </div>
 {{ end }}

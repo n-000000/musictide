@@ -1,16 +1,22 @@
 main:
+  - name: Espinho
+    url: /categories/espinho/
+    weight: 10
+  - name: Nacional
+    url: /categories/nacional/
+    weight: 20
   - name: Cultura
     url: /categories/cultura/
-    weight: 10
+    weight: 30
   - name: Desporto
     url: /categories/desporto/
-    weight: 20
+    weight: 40
   - name: Lifestyle
     url: /categories/lifestyle/
-    weight: 30
+    weight: 50
   - name: Agenda
     url: /categories/agenda/
-    weight: 40
+    weight: 60
   - name: Colaboradores
     url: /authors/
-    weight: 50
+    weight: 70

@@ -448,7 +448,8 @@ collections:
       - label: Email Google
         name: email
         widget: string
-        hint: "Endereço Gmail com que o utilizador faz login no CMS"
+        pattern: ['^[^@\s]+@[^@\s]+\.[^@\s]+$', 'Deve ser um endereço de email válido']
+        hint: "Endereço Gmail com que o utilizador faz login no CMS. ATENÇÃO: remover este registo remove o acesso do utilizador ao CMS."
 
       - label: Slug de Autor
         name: login

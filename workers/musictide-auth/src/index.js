@@ -94,7 +94,20 @@ async function handleSyncUsers(request, env) {
     .map(b => b.toString(16).padStart(2, '0'))
     .join('');
 
-  if (sig !== expected) return new Response('Invalid signature', { status: 401 });
+  const cmpKey = crypto.getRandomValues(new Uint8Array(32));
+  const cmpCryptoKey = await crypto.subtle.importKey(
+    'raw', cmpKey, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
+  );
+  const enc = new TextEncoder();
+  const [a, b] = await Promise.all([
+    crypto.subtle.sign('HMAC', cmpCryptoKey, enc.encode(expected)),
+    crypto.subtle.sign('HMAC', cmpCryptoKey, enc.encode(sig)),
+  ]);
+  const aBytes = new Uint8Array(a);
+  const bBytes = new Uint8Array(b);
+  if (aBytes.some((byte, i) => byte !== bBytes[i])) {
+    return new Response('Invalid signature', { status: 401 });
+  }
 
   const event = request.headers.get('X-GitHub-Event');
   if (event !== 'push') return new Response('OK', { status: 200 });
@@ -108,7 +121,8 @@ async function handleSyncUsers(request, env) {
 
   if (payload.ref !== 'refs/heads/main') return new Response('OK', { status: 200 });
 
-  const touchesUsers = payload.commits.some(c =>
+  const commits = Array.isArray(payload.commits) ? payload.commits : [];
+  const touchesUsers = commits.some(c =>
     [...(c.added || []), ...(c.modified || []), ...(c.removed || [])]
       .some(p => p.startsWith('data/cms-users/'))
   );

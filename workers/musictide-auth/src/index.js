@@ -41,9 +41,14 @@ function jsonResponse(data, status = 200) {
 }
 
 async function syncUsers(env) {
+  const ghHeaders = {
+    'User-Agent': 'musictide-auth',
+    'Authorization': 'Bearer ' + env.GITHUB_SERVICE_ACCOUNT_PAT,
+  };
+
   const listRes = await fetch(
     'https://api.github.com/repos/n-000000/musictide/contents/data/cms-users',
-    { headers: { 'User-Agent': 'musictide-auth' } }
+    { headers: ghHeaders }
   );
   if (listRes.status === 404) return; // directory not yet created — nothing to sync
   if (!listRes.ok) throw new Error('GitHub API ' + listRes.status);
@@ -56,7 +61,7 @@ async function syncUsers(env) {
     files
       .filter(f => f.type === 'file' && f.name.endsWith('.json'))
       .map(async f => {
-        const r = await fetch(f.download_url, { headers: { 'User-Agent': 'musictide-auth' } });
+        const r = await fetch(f.download_url, { headers: ghHeaders });
         if (!r.ok) throw new Error('Failed to fetch ' + f.name + ': ' + r.status);
         const data = await r.json();
         if (data.email) desired.set(data.email, { name: data.name || '', login: data.login || '' });
@@ -79,6 +84,8 @@ async function syncUsers(env) {
 }
 
 async function handleSyncUsers(request, env) {
+  if (!env.WEBHOOK_SECRET) return new Response('Not configured', { status: 503 });
+
   const sig = request.headers.get('X-Hub-Signature-256');
   if (!sig) return new Response('Missing signature', { status: 401 });
 

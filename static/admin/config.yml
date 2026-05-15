@@ -428,3 +428,30 @@ collections:
             widget: boolean
             default: false
             hint: "Colorir o fundo de cada cartão com a cor da sua categoria"
+
+  # ── UTILIZADORES CMS ─────────────────────────────────────────
+  - name: cms-users
+    label: Utilizadores
+    label_singular: Utilizador
+    folder: data/cms-users
+    create: true
+    format: json
+    extension: json
+    identifier_field: name
+    fields:
+
+      - label: Nome
+        name: name
+        widget: string
+        hint: "Nome completo — usado como nome de autor nos commits git"
+
+      - label: Email Google
+        name: email
+        widget: string
+        hint: "Endereço Gmail com que o utilizador faz login no CMS"
+
+      - label: Slug de Autor
+        name: login
+        widget: string
+        required: false
+        hint: "Slug da página de colaborador em /colaboradores/ (ex: joao-silva). Opcional."

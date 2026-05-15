@@ -77,6 +77,51 @@ async function syncUsers(env) {
   ]);
 }
 
+async function handleSyncUsers(request, env) {
+  const sig = request.headers.get('X-Hub-Signature-256');
+  if (!sig) return new Response('Missing signature', { status: 401 });
+
+  const body = await request.arrayBuffer();
+  const key = await crypto.subtle.importKey(
+    'raw',
+    new TextEncoder().encode(env.WEBHOOK_SECRET),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  );
+  const mac = await crypto.subtle.sign('HMAC', key, body);
+  const expected = 'sha256=' + Array.from(new Uint8Array(mac))
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('');
+
+  if (sig !== expected) return new Response('Invalid signature', { status: 401 });
+
+  const event = request.headers.get('X-GitHub-Event');
+  if (event !== 'push') return new Response('OK', { status: 200 });
+
+  let payload;
+  try {
+    payload = JSON.parse(new TextDecoder().decode(body));
+  } catch {
+    return new Response('Invalid payload', { status: 400 });
+  }
+
+  if (payload.ref !== 'refs/heads/main') return new Response('OK', { status: 200 });
+
+  const touchesUsers = payload.commits.some(c =>
+    [...(c.added || []), ...(c.modified || []), ...(c.removed || [])]
+      .some(p => p.startsWith('data/cms-users/'))
+  );
+  if (!touchesUsers) return new Response('OK', { status: 200 });
+
+  try {
+    await syncUsers(env);
+    return new Response('OK', { status: 200 });
+  } catch (err) {
+    return new Response('Sync failed: ' + err.message, { status: 500 });
+  }
+}
+
 async function handleAuth(request, env) {
   const url = new URL(request.url);
   const siteId = url.searchParams.get('site_id') || '';

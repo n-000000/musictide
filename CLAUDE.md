@@ -72,7 +72,7 @@ All config lives in `config/_default/` as YAML:
 
 | File | Purpose |
 |------|---------|
-| `hugo.yaml` | Core Hugo settings, baseURL, outputs, taxonomies (incl. events) |
+| `hugo.yaml` | Core Hugo settings, baseURL, outputs, taxonomies (tags, categories, authors, series) |
 | `module.yaml` | Hugo module imports |
 | `params.yaml` | Blowfish theme params + `mediaBaseURL` |
 | `markup.yaml` | Goldmark renderer + highlight config |
@@ -185,18 +185,30 @@ What it does:
 - **Auth** — verifies the Bearer token (service account PAT issued by `musictide-auth`) has push access to `n-000000/musictide`
 - **Daily cron (03:00 UTC)** — deletes orphaned R2 objects not referenced in any content markdown file. Fetches the full repo tree from GitHub's public API and cross-references R2 keys.
 
+Note: `workers/r2-upload/` still exists in the repo but is **redundant** — it was superseded by `r2-proxy` and has not been deployed since 2026-03-22. Safe to delete.
+
 ### Known Sveltia Limitations
 
 These are confirmed limitations that cannot be fixed from our side:
 - `registerMediaLibrary()` is NOT supported — hence the fetch interceptor approach
 - `locale` config option is NOT supported — UI follows browser locale; Portuguese unavailable
-- Rich text editor outputs Markdown only — no HTML mode, no tables, no image float/resize
+- Rich text editor outputs Markdown only — no HTML mode, no tables, no image float/resize, no text alignment
 - Stock photo integration cannot be disabled (CSS hack hides it)
 - `widget: hidden` doesn't properly hide list/array fields
 - Media list is cached per session — uploads via one image field don't appear in another field's picker until page reload
 - `date_format` only affects stored format, not UI display
 - R2 `prefix` is static — no dynamic per-article or date-based prefixes (hence the proxy Worker)
 - Collection-level `media_folder`/`public_folder` with placeholders do NOT work with R2 external media
+- Multiple image pasting not supported in Firefox (Chrome/Android only)
+- No Remark/MDX plugins — Sveltia uses Lexical editor internally
+
+**Confirmed capabilities** (useful when planning future CMS features):
+- `preSave`/`postSave` event hooks — JS that runs before/after each save, can modify entry data (used for hashtag extraction)
+- `widget: image` with `multiple: true` — multi-select, drag-drop, clipboard paste (used for gallery field)
+- `widget: relation` — cross-collection references with searchable dropdown; `dropdown_threshold: 0` forces always-searchable
+- `widget: list` with object `types` — type selector + different field sets per type (page builder / block-based content pattern)
+- DateTime `default: "{{now}}"` — auto-fills current datetime on new entry creation
+- Hidden fields with `{{datetime}}`, `{{uuid}}`, `{{author-login}}` etc. auto-fill templates
 
 ---
 
@@ -206,17 +218,27 @@ Five CMS collections, all live and operational:
 
 | Collection | CMS name | Storage | Purpose |
 |------------|----------|---------|---------|
-| Articles | `posts` | `content/posts/` | Photography-heavy event posts. Fields: event (relation), title, date, featureimage, author, body (text widget), gallery (multi-image), draft |
+| Articles | `posts` | `content/posts/` | Photography-heavy event posts. Fields: category (relation), title, date, featureimage, author, body (text widget), gallery (multi-image), draft |
 | Ads | `ads` | `content/ads/` | Paid placement ads. Fields: title, creative_image, click_through_url, active_from/until, destaque (bool), notes, draft |
-| Events | `events` | `content/events/` | Lookup collection for the article event relation picker. Fields: title only. `content/events/` has no files — collection exists in CMS config only. |
-| Contributors | `authors` | `content/authors/` | Contributor profiles. Fields: title, photo, bio, email, instagram, draft |
-| Site Style | `settings` | `data/style.yaml` | File collection (single file). Palette + font selection |
+| Categories | `categories` | `content/categories/` | Lookup collection for article category relation. Fields: title, color (palette slot selector). Seeded: Cultura, Desporto, Lifestyle, Agenda, Espinho, Nacional. |
+| Contributors | `authors` | `content/authors/` | Contributor profiles. Fields: title, photo, bio, email + 10 social network URLs (instagram, facebook, x_twitter, bluesky, mastodon, threads, tiktok, youtube, soundcloud, spotify), draft |
+| Site Style | `settings` | `data/style.yaml` | File collection (single file). Palette, font, homepage layout, and listing style selection |
 
 **Body field** uses `widget: text` (plain text), not `widget: markdown`. Simpler for the photographer.
 
 **Tags** are not a CMS field — they are extracted automatically from `#hashtags` in the body text by the preSave hook.
 
 **Ads note:** Ads are paid placement (transactional, not per-click). Two slots implemented: destaque (below hero on homepage + category pages) and feed (injected between HTMX scroll batches). The `destaque: true` field flags an ad for the below-hero position; only one should be active at a time (JS picks the first match). Mock ads `ariel-destaque.md` and `skip-mock.md` exist in `content/ads/` — remove before launch.
+
+**Ad slot edge cases:**
+- No active ads → both slots stay hidden, no visible gap
+- No destaque ad active → below-hero slot hidden; feed slots still populate from active pool
+- Multiple `destaque: true` active → first in JSON array wins (content convention, not enforced by code)
+- `active_from`/`active_until` absent → treated as open-ended (no start / no expiry)
+- JS disabled → all slots stay hidden (graceful degradation)
+- Infinite scroll not triggered → feed slots never populated (no `htmx:afterSettle` fires)
+
+**Category relation stores title not slug:** `value_field: title` in the CMS relation widget stores the human-readable category title (e.g. `"Cultura"`) as a plain string in article frontmatter. Hugo auto-slugifies this for taxonomy URLs. Do not change `value_field` to `slug` — it would break existing content.
 
 ---
 
@@ -229,14 +251,24 @@ These files override Blowfish defaults:
 | `layouts/_default/single.html` | Article template — injects gallery partial below body, uses `hugo.Data` (not deprecated `site.Data`). `max-w-prose` removed from header, content div, and footer so all elements span the full content column width. |
 | `layouts/partials/article-gallery.html` | Renders `gallery` frontmatter as responsive CSS columns grid (1 col mobile, 2 col ≥640px, 3 col ≥1024px). No `<a>` wrapper — Blowfish's Tobii zoom handles clicks |
 | `layouts/index.html` | Homepage entry point — reads `hugo.Data.style.homepage_layout` and dispatches to the appropriate `home/*.html` partial. Overrides Blowfish's version which reads from `params.yaml`. |
-| `layouts/partials/home/hero.html` | Custom hero layout showing latest non-draft article (featureimage as background, title, event badge, "Ler artigo" CTA). Falls back to `data/style.yaml homepage_image`. |
-| `layouts/partials/home/background.html` | Copy of Blowfish's background layout extended to also read `hugo.Data.style.homepage_image` as image source. |
-| `layouts/partials/extend-head.html` | Dynamically loads scheme CSS, Google Fonts, gallery CSS, ad JSON blob (`ads-data.html`), and the IntersectionObserver + HTMX infinite-scroll setup (600px preemptive rootMargin, month-group merge logic). |
-| `layouts/partials/extend-footer.html` | Client-side JS that strips `#` from hashtags in rendered article content |
+| `layouts/partials/home/hero.html` | Custom hero layout showing latest non-draft article (featureimage as 16:9 background, title + category badge anchored bottom-left). Falls back to `data/style.yaml homepage_image` as a fixed page background. |
+| `layouts/partials/extend-head.html` | Dynamically loads scheme CSS, Google Fonts, gallery CSS, ad JSON blob (`ads-data.html`), IntersectionObserver + HTMX infinite-scroll setup (600px preemptive rootMargin, month-group merge logic), and client-side JS that strips `#` prefix from hashtag spans in rendered article body. |
+| `layouts/partials/footer.html` | Intentionally empty — footer removed from the site. |
+| `layouts/partials/hero/big.html` | Full-width zoomable article hero image. Called from `single.html` when `heroStyle = "big"`. Delegates image lookup to `resolve-feature-image.html`. |
+| `layouts/partials/resolve-feature-image.html` | Centralised feature-image resolution logic (URL or Hugo resource). Replaces duplicated lookup code that previously lived in `big.html`, `card.html`, and `hero.html`. |
+| `layouts/partials/article-link/simple.html` | Override of Blowfish's simple list-item partial. |
+| `layouts/partials/header/basic.html` | Header layout override — logo, nav, appearance switcher. |
+| `layouts/partials/header/components/desktop-menu.html` | Desktop nav menu component override. |
+| `layouts/partials/header/components/mobile-menu.html` | Mobile nav menu component override. |
 | `layouts/partials/ads-data.html` | Serialises all non-draft ads from `content/ads/` to a `<script id="mt-ads-data" type="application/json">` blob in `<head>`. Includes title, image, url, destaque, from/until timestamps. Read by `ad-slot.html` JS at visit time for date filtering. |
 | `layouts/partials/ad-slot.html` | Renders the hidden `#mt-ad-destaque` card + inline IIFE. On load: filters active ads by date, fills + reveals destaque slot. On `htmx:afterSettle`: fills one `[data-ad-inject]` feed slot per event, skipping if the previous sibling is already an `.mt-ad-slot`. URL scheme validated via `safeUrl()` (http/https only). |
 | `layouts/posts/list.fragment.html` | HTMX infinite-scroll fragment for homepage. Includes `[data-ad-inject]` feed placeholder only when `$pager.HasNext` is true (not on the last page). |
 | `layouts/categories/term.fragment.html` | Same as above for category listing pages. |
+| `layouts/partials/category-badge.html` | Renders colored badge for article's first category. Looks up `_index.md` for `color` param; injects scoped `<style>` block (class `cat-badge--{slug}`) to avoid ZgotmplZ on `var(--color-X)`. |
+| `layouts/partials/article-link/card.html` | Blowfish card override — adds `category-badge.html` before `<header>` inside `.p-4`. |
+| `layouts/categories/term.html` | Category listing page — colored heading, HTMX infinite scroll, destaque ad slot, `content_style`-aware wide/constrained grid. |
+| `layouts/authors/list.html` | Bio card grid for `/authors/`. Photo or initials placeholder left, name/bio/social icons right. 10 social networks + email. Uses `.Plain` (not `.Content`) for bio — avoids Hugo wrapping plain text body in extra `<p>` tags. |
+| `layouts/posts/list.html` | Overrides Blowfish `_default/list.html` for posts section only. Reads `posts_listing_style` from `data/style.yaml` instead of `params.yaml`. |
 
 ---
 
@@ -256,6 +288,12 @@ Note: `slab` and `swamp` are renamed versions of what were previously `slate` an
 **Font options (body):** system, inter, lato, merriweather, roboto-slab, playfair
 
 **Homepage layout** is controlled by `data/style.yaml` → `homepage_layout` field (page, hero, background, card, profile). `layouts/index.html` is overridden locally to read this from `hugo.Data.style` instead of `params.yaml`. The `hero` layout is a fully custom override showing the latest non-draft article with its `featureimage` as a full-bleed background. The `background` layout is overridden to also pick up `homepage_image` from `data/style.yaml`.
+
+**Additional `data/style.yaml` fields:**
+- `card_layout` (cards/list) — card grid vs list display; used by homepage, `/posts/`, and category pages
+- `wide_layout` (true/false) — breaks the card grid out of the prose column width (`.mt-wide.mt-breakout`)
+- `card_alignment` (left/right) — card content alignment
+- `card_category_color` (true/false) — show/hide colored category badges on cards
 
 All fields switchable via CMS at Definições → Estilo Visual.
 
@@ -292,16 +330,23 @@ Remove both before launch.
 - **Custom domain** — still on `musictide.pages.dev`.
 - **Video hosting strategy** — not started.
 
+### Known issues / to investigate
+
+- **Espinho and Nacional missing from nav** — `content/categories/espinho/` and `content/categories/nacional/` exist and are seeded, but neither appears in `config/_default/menus.pt.yaml` or `menus.en.yaml`. Add nav entries or decide these are intentionally unlisted.
+- **Single-category limit in CMS** — The `category` relation field in the posts collection is a single-value widget. Some scraped articles have multiple categories in frontmatter (`categories: [A, B]`), but a CMS editor can only assign one. Decide: allow multi-select in CMS (change widget to `multiple: true`) or enforce single-category as a content rule.
+- **Front page deduplication logic** — It is unclear what prevents an article from appearing more than once on the homepage (e.g. via both the hero and the card grid). Needs a code review of `hero.html` + the HTMX fragment to document and verify the deduplication criteria.
+- **Search / tags / categories interplay** — No review has been done of how Pagefind search, the `#hashtag` tag system, and the categories taxonomy interact. Needs a pass to check for gaps (e.g. tags not indexed, category pages not surfaced in search).
+
 ### Cleanup
 
 - **Mock ads** — `content/ads/ariel-destaque.md` and `content/ads/skip-mock.md` to remove before launch.
+- **`workers/r2-upload/`** — Redundant Worker still present in repo. Safe to delete.
 
 ### Future consideration
 
-- **CMS user management via Sveltia** — Add a `users` collection to `config.yml` (files in `data/cms-users/`, fields: `name`, `email`, `login`). A GitHub Actions workflow fires on push to `data/cms-users/**` and syncs those files to the `USERS` KV namespace via `wrangler kv key put`. Lets the photographer manage CMS users without developer involvement. Needs a Cloudflare API token in GitHub secrets.
-- **`login` field wiring** — `login` in the KV user record is stored in `mt-current-user` localStorage but not yet used. Intended to link a logged-in user to their `content/authors/` profile. Wire up when CMS user management is implemented.
-- **Block-based content model** — Evaluated on 2026-03-22 as "Path B" (see `docs/superpowers/specs/2026-03-22-cms-assessment-and-paths-forward.md`). Would replace the single body text field with a list of typed blocks (text, image, gallery) giving the photographer layout control. Not implemented — current approach (body text + separate gallery field) was chosen for simplicity. Revisit if photographer needs more editorial control.
-- **CMS replacement** — Tina CMS (keeps Hugo, better editor) or Nuxt + Nuxt Studio (full rebuild, best editor UX) were evaluated and deferred. See same assessment doc.
+- **`login` field wiring** — `login` in the KV user record is stored in `mt-current-user` localStorage but not yet used. Intended to link a logged-in user to their `content/authors/` profile. Wire up when CMS user management is in active use.
+- **Block-based content model** — Evaluated on 2026-03-22 (Path B). Would replace the single body text field with a list of typed blocks (text, image, gallery) giving the photographer layout control. Not implemented — current approach (body text + separate gallery field) was chosen for simplicity. Revisit if photographer needs more editorial control. Sveltia's `widget: list` with object `types` supports this pattern.
+- **CMS replacement** — Tina CMS (keeps Hugo, better editor) or Nuxt + Nuxt Studio (full rebuild, best editor UX) were evaluated on 2026-03-22 and deferred.
 
 ---
 
@@ -331,10 +376,13 @@ Condensed timeline of key milestones:
 | 2026-03-23 | R2 proxy Worker built (`workers/r2-proxy/`). Fetch interceptor in `index.html`. Date-based upload prefixes. GitHub OAuth auth on uploads. Daily orphan cleanup cron. |
 | 2026-03-24 | Styling system (5 palettes, fonts, CSS custom properties via `data/style.yaml`). Homepage article grid. Article gallery partial. Hashtag extraction preSave hook. Mock articles. Body field changed to text widget. All committed and pushed. |
 | 2026-03-25 | Color scheme migration: replaced homebrew CSS custom property inline blocks in `extend-head.html` with native Blowfish scheme CSS files (`assets/css/schemes/*.css`). Article layout fix: removed `max-w-prose` from header/content/footer. Homepage layout switching via `data/style.yaml` (local `layouts/index.html` override). Custom hero layout showing latest article. Background layout override. 8 color schemes, 10 heading fonts, 6 body fonts. CMS local_backend support via `yarn cms`. |
+| 2026-03-26 | Hero redesign: 16:9 aspect ratio, full area clickable `<a>`, title + category badge anchored bottom-left. Header constrained to 1600px. Global `border-radius: 0 !important` reset. CMS layout toggles added (`homepage_gallery_style`, `posts_listing_style`). |
+| 2026-03-28 | Authors/colaboradores page: bio card grid layout, photo or initials placeholder, 10 social network fields added to CMS authors collection, Colaboradores/Contributors nav entries added. |
+| 2026-04-01 | Events → categories migration: CMS `events` collection renamed to `categories` with `color` field; `category-badge.html` partial with per-category theme color via scoped `<style>` block; badge shown on hero and article cards; category nav items (Cultura, Desporto, Lifestyle, Agenda). |
 | 2026-05-01 | Ads display implemented: `destaque` CMS field added; `ads-data.html` embeds non-draft ads as JSON blob in `<head>`; `ad-slot.html` reveals destaque card below hero + injects feed ads between HTMX scroll batches via `htmx:afterSettle`; URL XSS sanitised via `safeUrl()`; adjacent-ad guard prevents duplicates from month-merge race. Hero mobile portrait fix: `80svh` on `max-width:640px portrait`. HTMX sentinel rootMargin increased to 600px. Mock articles confirmed replaced by real photographer content. |
 | 2026-05-14 | Google Sign-In auth shipped. Replaced `sveltia-cms-auth` (GitHub OAuth) with `musictide-auth` Worker (Google GIS SDK + Cloudflare KV user registry). Users log in with Google; Worker verifies JWT, looks up email in KV, issues shared GitHub service account PAT to Sveltia. Commit author injection added to `index.html` fetch interceptor — `git log` shows real contributor name/email. `workers/r2-upload/` deleted (was already redundant). Google OAuth app published to production. |
+| 2026-05-15 | CMS user management shipped. `cms-users` Sveltia collection (`data/cms-users/`, JSON format) lets the photographer add/remove CMS users without developer involvement. GitHub push webhook → `POST /sync-users` on `musictide-auth` Worker; HMAC-SHA256 verified, timing-safe comparison, full KV reconciliation on each relevant push. No GitHub Actions, no Cloudflare API token in GitHub secrets — all credentials stay in Cloudflare Workers. |
 
-Design docs live in `docs/superpowers/specs/` and `docs/superpowers/plans/` — useful for understanding rationale behind decisions but may be outdated relative to current code.
 
 ---
 

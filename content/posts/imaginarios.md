@@ -6,7 +6,7 @@ date: 2026-05-22T19:46:00+01:00
 featureimage: https://pub-576ea11202f543d0bf28d36ef63d18ff.r2.dev/posts/2026/05/22/_AG_3175.jpg
 featureimagecaption: ''
 credit_texto: ''
-credit_fotos: ''
+credit_fotos: Mário Gouveia
 credit_video: ''
 gallery:
   - https://pub-576ea11202f543d0bf28d36ef63d18ff.r2.dev/posts/2026/05/22/_AG_3204.jpg

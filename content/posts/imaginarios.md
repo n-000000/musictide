@@ -42,3 +42,6 @@ Cruzando a linguagem do *clown* com uma técnica física cirúrgica, Nicola Fant
 No território do circo contemporâneo, a Companhia SOA assina com *“Con la cabeza en las nubes”* um manifesto poético sobre a necessidade humana de evasão. Distanciando-se do mero virtuosismo acrobático, o espetáculo utiliza o espaço aéreo como uma extensão da mente, transformando a expressão popular "ter a cabeça nas nuvens" numa arrebatadora metáfora visual e física sobre o sonho e a rotina.
 A narrativa acompanha personagens presas ao automatismo do dia a dia que, através do impulso circense, descobrem a gravidade zero da imaginação. A cenografia vertical torna-se o palco de uma coreografia aérea meticulosa, onde técnicas de corda, tecido e teatro físico se fundem para ilustrar a transição entre a rigidez terrena e a leveza da liberdade.
 Neste universo, a sonoplastia e o desenho musical funcionam como o verdadeiro oxigénio da encenação. Cada silêncio, queda ou voo é pontuado por texturas sonoras que amplificam a vulnerabilidade dos corpos suspensos. Ao cruzar a comédia visual do *clown* com a imponência das artes aéreas, a Cia SOA constrói uma obra imersiva que convida o público a descolar os pés do chão e a reencontrar a poesia escondida no quotidiano.
+
+Texto: David Costa
+Fotos: Mário Gouveia

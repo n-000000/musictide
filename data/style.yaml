@@ -7,5 +7,5 @@ homepage_layout: hero
 homepage_image: ''
 card_layout: cards
 wide_layout: false
-card_alignment: right
+card_alignment: left
 card_category_color: true

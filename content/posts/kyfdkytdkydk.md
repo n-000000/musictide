@@ -1,10 +1,10 @@
 ---
 categories: Cultura
 event: ''
-title: kyfdkytdkydk
+title: Momento Mori Maruja
 date: 2026-05-29T18:52:00+01:00
 featureimage: https://pub-576ea11202f543d0bf28d36ef63d18ff.r2.dev/posts/2026/05/29/_AG_3477.jpg
-featureimagecaption: ''
+featureimagecaption: kytudlkutdk
 credit_texto: Alexandre Marques
 credit_fotos: Mário Gouveia
 credit_video: ''
@@ -44,7 +44,7 @@ gallery:
   - https://pub-576ea11202f543d0bf28d36ef63d18ff.r2.dev/posts/2026/05/29/_AG_3369.jpg
   - https://pub-576ea11202f543d0bf28d36ef63d18ff.r2.dev/posts/2026/05/29/_AG_3323.jpg
   - https://pub-576ea11202f543d0bf28d36ef63d18ff.r2.dev/posts/2026/05/29/_AG_3314.jpg
-draft: true
+draft: false
 tags: []
 ---
 

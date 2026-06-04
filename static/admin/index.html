@@ -7,13 +7,15 @@
 
     <!-- Hide stock photo integrations — no config option exists in Sveltia -->
     <style>
-      /* Hide the "Stock Photos" option group in media picker */
+      /* Hide all stock photo service buttons in the media picker nav */
       button[data-name="picsum"],
-      button[data-name="unsplash"] {
+      button[data-name="unsplash"],
+      button[data-name="pexels"],
+      button[data-name="pixabay"] {
         display: none !important;
       }
-      /* Hide the parent group when all children are hidden */
-      .option-group:has(> .inner > .option > button[data-name="picsum"]) {
+      /* Hide the parent option-group when it contains any stock service */
+      .option-group:has(button[data-name="picsum"]) {
         display: none !important;
       }
     </style>
@@ -101,17 +103,51 @@
           return _fetch.call(window, newUrl, newInit);
         }
 
-        // Helper: upload via presigned URL (PUT directly to R2, bypasses Worker body limit).
-        async function uploadViaPresignedUrl(url, init) {
-          // Extract the filename from the S3 PUT path: /{bucket}/{key}
-          const pathParts = new URL(url).pathname.slice(1).split('/');
-          const key = decodeURIComponent(pathParts.slice(1).join('/'));
-          const contentType = (init && init.headers)
+        // Progress toast — shown during upload, hidden when done.
+        function showUploadProgress(filename) {
+          var toast = document.getElementById('mt-upload-toast');
+          if (!toast) {
+            toast = document.createElement('div');
+            toast.id = 'mt-upload-toast';
+            toast.style.cssText = [
+              'position:fixed', 'bottom:24px', 'right:24px',
+              'background:rgba(0,0,0,0.82)', 'color:#fff',
+              'padding:10px 16px', 'border-radius:8px',
+              'font:13px/1.5 system-ui,sans-serif',
+              'z-index:99999', 'min-width:200px',
+              'box-shadow:0 4px 16px rgba(0,0,0,0.35)',
+              'pointer-events:none',
+            ].join(';');
+            document.body.appendChild(toast);
+          }
+          var name = filename.split('/').pop();
+          toast.textContent = 'A enviar ' + name + '... 0%';
+          toast.style.display = 'block';
+          toast.style.opacity = '1';
+          return toast;
+        }
+
+        function hideUploadProgress() {
+          var toast = document.getElementById('mt-upload-toast');
+          if (!toast) return;
+          toast.style.opacity = '0';
+          setTimeout(function() {
+            if (toast.style.opacity === '0') toast.style.display = 'none';
+          }, 250);
+        }
+
+        // Helper: upload via presigned URL using XHR for progress feedback.
+        // PUT goes directly to R2 (bypasses Worker body limit).
+        function uploadViaPresignedUrl(url, init) {
+          // Extract the key from the S3 PUT path: /{bucket}/{key}
+          var pathParts = new URL(url).pathname.slice(1).split('/');
+          var key = decodeURIComponent(pathParts.slice(1).join('/'));
+          var contentType = (init && init.headers)
             ? (new Headers(init.headers)).get('Content-Type') || 'application/octet-stream'
             : 'application/octet-stream';
 
           // Step 1: ask Worker for a presigned URL
-          const signRes = await _fetch.call(window, 'https://' + PROXY_HOST + '/sign-upload', {
+          return _fetch.call(window, 'https://' + PROXY_HOST + '/sign-upload', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -122,22 +158,50 @@
               contentType: contentType,
               collection: getCurrentCollection(),
             }),
+          }).then(function(signRes) {
+            if (!signRes.ok) {
+              throw new Error('Failed to get presigned upload URL: ' + signRes.status);
+            }
+            return signRes.json();
+          }).then(function(data) {
+            var presignedUrl = data.url;
+            var toast = showUploadProgress(key);
+
+            // Step 2: PUT directly to R2 via XHR for progress tracking
+            return new Promise(function(resolve, reject) {
+              var xhr = new XMLHttpRequest();
+
+              xhr.upload.onprogress = function(e) {
+                if (e.lengthComputable) {
+                  var pct = Math.round((e.loaded / e.total) * 100);
+                  var name = key.split('/').pop();
+                  toast.textContent = 'A enviar ' + name + '... ' + pct + '%';
+                }
+              };
+
+              xhr.onload = function() {
+                hideUploadProgress();
+                resolve(new Response(xhr.response || null, {
+                  status: xhr.status,
+                  statusText: xhr.statusText,
+                }));
+              };
+
+              xhr.onerror = function() {
+                hideUploadProgress();
+                reject(new TypeError('Network request failed'));
+              };
+
+              xhr.onabort = function() {
+                hideUploadProgress();
+                reject(new DOMException('Aborted', 'AbortError'));
+              };
+
+              xhr.open('PUT', presignedUrl);
+              xhr.setRequestHeader('Content-Type', contentType);
+              xhr.send(init.body);
+            });
           });
-
-          if (!signRes.ok) {
-            throw new Error('Failed to get presigned upload URL: ' + signRes.status);
-          }
-
-          const { url: presignedUrl } = await signRes.json();
-
-          // Step 2: PUT the file body directly to R2 via the presigned URL
-          const putRes = await _fetch.call(window, presignedUrl, {
-            method: 'PUT',
-            body: init.body,
-            headers: { 'Content-Type': contentType },
-          });
-
-          return putRes;
         }
 
         window.fetch = function (input, init) {
@@ -178,7 +242,7 @@
     </script>
 
     <!-- Pin version — do not use @latest. Check https://github.com/sveltia/sveltia-cms/releases for updates. -->
-    <script src="https://unpkg.com/@sveltia/cms@0.149.1/dist/sveltia-cms.js"></script>
+    <script src="https://unpkg.com/@sveltia/cms@0.166.0/dist/sveltia-cms.js"></script>
 
     <script>
       // ── Hashtag Extraction ───────────────────────────────────────

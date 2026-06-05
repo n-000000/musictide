@@ -107,11 +107,23 @@
           return _fetch.call(window, newUrl, newInit);
         }
 
-        // Progress toast — appended inside the open dialog (shares its stacking context,
-        // so it appears above the backdrop overlay). Centered on screen.
+        // Progress toast — renders inside the footer spacer (the flex gap to the left of
+        // Insert/Cancel). Avoids the dynamic #cXXX container ID; .sui.spacer is Sveltia's
+        // stable design-system class. Falls back to a centered dialog overlay if not found.
         function showUploadProgress(filename) {
           var existing = document.getElementById('mt-upload-toast');
           if (existing) existing.remove();
+          var name = filename.split('/').pop();
+          var spacer = document.querySelector('[role="dialog"] .footer .sui.spacer')
+                    || document.querySelector('[role="dialog"] .footer .spacer');
+          if (spacer) {
+            var toast = document.createElement('span');
+            toast.id = 'mt-upload-toast';
+            toast.style.cssText = 'font:13px/1 system-ui,sans-serif;opacity:0.75;';
+            toast.textContent = 'A enviar ' + name + '... 0%';
+            spacer.appendChild(toast);
+            return toast;
+          }
           var toast = document.createElement('div');
           toast.id = 'mt-upload-toast';
           toast.style.cssText = [
@@ -125,7 +137,6 @@
             'box-shadow:0 8px 32px rgba(0,0,0,0.5)',
           ].join(';');
           (document.querySelector('[role="dialog"]') || document.body).appendChild(toast);
-          var name = filename.split('/').pop();
           toast.textContent = 'A enviar ' + name + '... 0%';
           return toast;
         }

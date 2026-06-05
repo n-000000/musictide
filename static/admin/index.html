@@ -62,6 +62,10 @@
       (function () {
         const R2_HOST = '43220b81420989e7198287bd4559a701.r2.cloudflarestorage.com';
         const PROXY_HOST = 'musictide-media-proxy.leftfield.workers.dev';
+        const PUB_CDN_HOST = 'pub-576ea11202f543d0bf28d36ef63d18ff.r2.dev';
+        // Maps bare filename → actual prefixed key (e.g. '_AG.jpg' → 'posts/2026/06/05/_AG.jpg')
+        // populated on upload; used to fix thumbnail URLs before Sveltia refreshes its list.
+        const uploadedKeys = new Map();
 
         // Try known localStorage keys where Sveltia/Netlify CMS stores the GitHub token.
         function getGitHubToken() {
@@ -103,14 +107,30 @@
           return _fetch.call(window, newUrl, newInit);
         }
 
-        // Progress toast — shown during upload, hidden when done.
+        // Return the flex button row at the bottom of the open media picker dialog,
+        // so the upload toast can be injected inline (to the left of Insert/Cancel).
+        function findMediaButtonRow() {
+          var dialog = document.querySelector('[role="dialog"]');
+          if (!dialog) return null;
+          var btns = dialog.querySelectorAll('button');
+          if (btns.length < 2) return null;
+          return btns[btns.length - 1].parentElement || null;
+        }
+
+        // Progress toast — injects into the media picker button row when possible;
+        // falls back to a fixed overlay at bottom-left (Sveltia uses bottom-right).
         function showUploadProgress(filename) {
-          var toast = document.getElementById('mt-upload-toast');
-          if (!toast) {
-            toast = document.createElement('div');
-            toast.id = 'mt-upload-toast';
+          var existing = document.getElementById('mt-upload-toast');
+          if (existing) existing.remove();
+          var toast = document.createElement('div');
+          toast.id = 'mt-upload-toast';
+          var row = findMediaButtonRow();
+          if (row) {
+            toast.style.cssText = 'display:flex;align-items:center;margin-right:auto;font:13px/1 system-ui,sans-serif;flex-shrink:0;padding-right:8px;';
+            row.prepend(toast);
+          } else {
             toast.style.cssText = [
-              'position:fixed', 'bottom:24px', 'right:24px',
+              'position:fixed', 'bottom:24px', 'left:24px',
               'background:rgba(0,0,0,0.82)', 'color:#fff',
               'padding:10px 16px', 'border-radius:8px',
               'font:13px/1.5 system-ui,sans-serif',
@@ -122,8 +142,6 @@
           }
           var name = filename.split('/').pop();
           toast.textContent = 'A enviar ' + name + '... 0%';
-          toast.style.display = 'block';
-          toast.style.opacity = '1';
           return toast;
         }
 
@@ -132,7 +150,7 @@
           if (!toast) return;
           toast.style.opacity = '0';
           setTimeout(function() {
-            if (toast.style.opacity === '0') toast.style.display = 'none';
+            if (toast.style.opacity === '0') toast.remove();
           }, 250);
         }
 
@@ -165,6 +183,9 @@
             return signRes.json();
           }).then(function(data) {
             var presignedUrl = data.url;
+            // Track bare filename → actual prefixed key for thumbnail redirect.
+            // R2 presigned URLs have the key as the path: /{key}?X-Amz-...
+            try { uploadedKeys.set(key.split('/').pop(), new URL(presignedUrl).pathname.slice(1)); } catch(e) {}
             var toast = showUploadProgress(key);
 
             // Step 2: PUT directly to R2 via XHR for progress tracking
@@ -228,6 +249,17 @@
             } catch (e) { /* fall through — commit proceeds without explicit author */ }
           }
 
+          // Redirect bare-filename public CDN requests to the date-prefixed path.
+          // Sveltia constructs thumbnail URLs from the original PUT key; our proxy stores
+          // files at posts/YYYY/MM/DD/filename, so freshly-uploaded thumbnails 404 otherwise.
+          if (url.includes(PUB_CDN_HOST)) {
+            var cdnPath = new URL(url).pathname.slice(1);
+            if (cdnPath.indexOf('/') === -1) {
+              var actualPath = uploadedKeys.get(cdnPath);
+              if (actualPath) return _fetch.call(window, 'https://' + PUB_CDN_HOST + '/' + actualPath, init);
+            }
+          }
+
           if (url.includes(R2_HOST)) {
             var method = (init && init.method) || 'GET';
             if (method.toUpperCase() === 'PUT') {
@@ -238,6 +270,46 @@
 
           return _fetch.apply(window, arguments);
         };
+
+        // Fix <img> thumbnails that browsers load directly (bypassing window.fetch).
+        // Sveltia sets img.src to the bare filename; we repoint to the prefixed key.
+        // The condition `path.indexOf('/') === -1` is always false for correct prefixed
+        // paths, so setting img.src to the fixed value won't re-trigger the observer.
+        (function() {
+          var cdnBase = 'https://' + PUB_CDN_HOST + '/';
+          function fixImg(img) {
+            var src = img.getAttribute('src') || '';
+            if (!src.startsWith(cdnBase)) return;
+            var path = src.slice(cdnBase.length);
+            if (path.indexOf('/') !== -1) return;
+            var actual = uploadedKeys.get(path);
+            if (actual) img.src = cdnBase + actual;
+          }
+          new MutationObserver(function(muts) {
+            muts.forEach(function(m) {
+              if (m.type === 'attributes') {
+                fixImg(m.target);
+              } else {
+                m.addedNodes.forEach(function(n) {
+                  if (n.nodeType !== 1) return;
+                  (n.tagName === 'IMG' ? [n] : Array.from(n.querySelectorAll('img'))).forEach(fixImg);
+                });
+              }
+            });
+          }).observe(document.documentElement, { childList: true, subtree: true, attributes: true, attributeFilter: ['src'] });
+        })();
+
+        // Ctrl/Cmd+A selects all items in the media picker dialog.
+        document.addEventListener('keydown', function(e) {
+          if (!((e.ctrlKey || e.metaKey) && e.key === 'a')) return;
+          var dialog = document.querySelector('[role="dialog"]');
+          if (!dialog) return;
+          var unchecked = Array.from(dialog.querySelectorAll('input[type="checkbox"]'))
+            .filter(function(cb) { return !cb.checked; });
+          if (!unchecked.length) return;
+          e.preventDefault();
+          unchecked.forEach(function(cb) { cb.click(); });
+        });
       })();
     </script>
 

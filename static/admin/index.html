@@ -107,14 +107,18 @@
           return _fetch.call(window, newUrl, newInit);
         }
 
-        // Return the flex button row at the bottom of the open media picker dialog,
-        // so the upload toast can be injected inline (to the left of Insert/Cancel).
+        // Return the button row at the bottom of the open media picker dialog.
+        // Primary target is the Sveltia footer div identified by role="none" + .footer;
+        // fallbacks keep it working if Sveltia's markup changes.
         function findMediaButtonRow() {
           var dialog = document.querySelector('[role="dialog"]');
           if (!dialog) return null;
-          var btns = dialog.querySelectorAll('button');
-          if (btns.length < 2) return null;
-          return btns[btns.length - 1].parentElement || null;
+          return dialog.querySelector('[role="none"].footer')
+              || dialog.querySelector('footer')
+              || (function() {
+                   var btns = dialog.querySelectorAll('button');
+                   return btns.length >= 2 ? btns[btns.length - 1].parentElement : null;
+                 })();
         }
 
         // Progress toast — injects into the media picker button row when possible;
@@ -304,15 +308,18 @@
         })();
 
         // Ctrl/Cmd+A selects all items in the media picker dialog.
+        // preventDefault fires unconditionally when a dialog is open so the browser's
+        // text select-all never triggers. Then we try multiple selectors since Sveltia's
+        // icon-mode items may not use input[type="checkbox"].
         document.addEventListener('keydown', function(e) {
           if (!((e.ctrlKey || e.metaKey) && e.key === 'a')) return;
           var dialog = document.querySelector('[role="dialog"]');
           if (!dialog) return;
-          var unchecked = Array.from(dialog.querySelectorAll('input[type="checkbox"]'))
-            .filter(function(cb) { return !cb.checked; });
-          if (!unchecked.length) return;
           e.preventDefault();
-          unchecked.forEach(function(cb) { cb.click(); });
+          var items = Array.from(dialog.querySelectorAll('input[type="checkbox"]:not(:checked)'));
+          if (!items.length) items = Array.from(dialog.querySelectorAll('[role="option"]:not([aria-selected="true"])'));
+          if (!items.length) items = Array.from(dialog.querySelectorAll('[role="gridcell"]:not([aria-selected="true"])'));
+          items.forEach(function(el) { el.click(); });
         });
       })();
     </script>

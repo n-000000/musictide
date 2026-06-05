@@ -114,8 +114,7 @@
           var existing = document.getElementById('mt-upload-toast');
           if (existing) existing.remove();
           var name = filename.split('/').pop();
-          var spacer = document.querySelector('[role="dialog"] .footer .sui.spacer')
-                    || document.querySelector('[role="dialog"] .footer .spacer');
+          var spacer = document.querySelector('[role="dialog"] .footer .sui.spacer');
           if (spacer) {
             var toast = document.createElement('span');
             toast.id = 'mt-upload-toast';

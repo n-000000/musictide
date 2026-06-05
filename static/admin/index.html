@@ -107,43 +107,24 @@
           return _fetch.call(window, newUrl, newInit);
         }
 
-        // Return the button row at the bottom of the open media picker dialog.
-        // Primary target is the Sveltia footer div identified by role="none" + .footer;
-        // fallbacks keep it working if Sveltia's markup changes.
-        function findMediaButtonRow() {
-          var dialog = document.querySelector('[role="dialog"]');
-          if (!dialog) return null;
-          return dialog.querySelector('[role="none"].footer')
-              || dialog.querySelector('footer')
-              || (function() {
-                   var btns = dialog.querySelectorAll('button');
-                   return btns.length >= 2 ? btns[btns.length - 1].parentElement : null;
-                 })();
-        }
-
-        // Progress toast — injects into the media picker button row when possible;
-        // falls back to a fixed overlay at bottom-left (Sveltia uses bottom-right).
+        // Progress toast — appended inside the open dialog (shares its stacking context,
+        // so it appears above the backdrop overlay). Centered on screen.
         function showUploadProgress(filename) {
           var existing = document.getElementById('mt-upload-toast');
           if (existing) existing.remove();
           var toast = document.createElement('div');
           toast.id = 'mt-upload-toast';
-          var row = findMediaButtonRow();
-          if (row) {
-            toast.style.cssText = 'display:flex;align-items:center;margin-right:auto;font:13px/1 system-ui,sans-serif;flex-shrink:0;padding-right:8px;';
-            row.prepend(toast);
-          } else {
-            toast.style.cssText = [
-              'position:fixed', 'bottom:24px', 'left:24px',
-              'background:rgba(0,0,0,0.82)', 'color:#fff',
-              'padding:10px 16px', 'border-radius:8px',
-              'font:13px/1.5 system-ui,sans-serif',
-              'z-index:99999', 'min-width:200px',
-              'box-shadow:0 4px 16px rgba(0,0,0,0.35)',
-              'pointer-events:none',
-            ].join(';');
-            document.body.appendChild(toast);
-          }
+          toast.style.cssText = [
+            'position:fixed', 'top:50%', 'left:50%',
+            'transform:translate(-50%,-50%)',
+            'background:rgba(0,0,0,0.88)', 'color:#fff',
+            'padding:16px 28px', 'border-radius:10px',
+            'font:15px/1.5 system-ui,sans-serif',
+            'z-index:2147483647', 'min-width:240px',
+            'text-align:center', 'pointer-events:none',
+            'box-shadow:0 8px 32px rgba(0,0,0,0.5)',
+          ].join(';');
+          (document.querySelector('[role="dialog"]') || document.body).appendChild(toast);
           var name = filename.split('/').pop();
           toast.textContent = 'A enviar ' + name + '... 0%';
           return toast;
@@ -308,17 +289,26 @@
         })();
 
         // Ctrl/Cmd+A selects all items in the media picker dialog.
-        // preventDefault fires unconditionally when a dialog is open so the browser's
-        // text select-all never triggers. Then we try multiple selectors since Sveltia's
-        // icon-mode items may not use input[type="checkbox"].
+        // preventDefault always fires when a dialog is open (prevents browser select-all).
+        // Media items always have a thumbnail <img> — walk up from each img to the
+        // nearest selectable container, dedupe, and click unselected ones.
         document.addEventListener('keydown', function(e) {
           if (!((e.ctrlKey || e.metaKey) && e.key === 'a')) return;
           var dialog = document.querySelector('[role="dialog"]');
           if (!dialog) return;
           e.preventDefault();
-          var items = Array.from(dialog.querySelectorAll('input[type="checkbox"]:not(:checked)'));
-          if (!items.length) items = Array.from(dialog.querySelectorAll('[role="option"]:not([aria-selected="true"])'));
-          if (!items.length) items = Array.from(dialog.querySelectorAll('[role="gridcell"]:not([aria-selected="true"])'));
+          var seen = new Set();
+          var items = [];
+          dialog.querySelectorAll('img').forEach(function(img) {
+            var el = img.closest('li, [role="option"], [role="gridcell"], [role="treeitem"]');
+            if (el && !seen.has(el) && el.getAttribute('aria-selected') !== 'true') {
+              seen.add(el); items.push(el);
+            }
+          });
+          // Fallback: checkboxes (some Sveltia views still use them)
+          if (!items.length) {
+            dialog.querySelectorAll('input[type="checkbox"]:not(:checked)').forEach(function(cb) { items.push(cb); });
+          }
           items.forEach(function(el) { el.click(); });
         });
       })();

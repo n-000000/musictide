@@ -185,7 +185,11 @@
             var presignedUrl = data.url;
             // Track bare filename → actual prefixed key for thumbnail redirect.
             // R2 presigned URLs have the key as the path: /{key}?X-Amz-...
-            try { uploadedKeys.set(key.split('/').pop(), new URL(presignedUrl).pathname.slice(1)); } catch(e) {}
+            try {
+              var actualKey = new URL(presignedUrl).pathname.slice(1); // may be '{bucket}/{key}'
+              if (actualKey.startsWith(pathParts[0] + '/')) actualKey = actualKey.slice(pathParts[0].length + 1);
+              uploadedKeys.set(key.split('/').pop(), actualKey);
+            } catch(e) {}
             var toast = showUploadProgress(key);
 
             // Step 2: PUT directly to R2 via XHR for progress tracking

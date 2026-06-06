@@ -202,6 +202,10 @@ These are confirmed limitations that cannot be fixed from our side:
 - Multiple image pasting not supported in Firefox (Chrome/Android only)
 - No Remark/MDX plugins — Sveltia uses Lexical editor internally
 
+- All ~24 Sveltia dialogs are mounted in the DOM simultaneously at `opacity:0`; only the active one gets CSS classes `.open.active`. Any monkey-patch targeting `[role="dialog"]` MUST use `.open.active` selector or it will hit the wrong dialog.
+- `widget: image` Insert button wires to internal Svelte 5 reactive state (`selectedAssets`) — synthetic `.click()` calls on `[role="option"]` elements update DOM `aria-selected` but not internal state. Ctrl+A → Insert only inserts 1 image because Sveltia reads state, not DOM. Requires fork to fix.
+- "View on live site" toolbar button: controlled by `!disabled && previewURL` condition in `contents/details/toolbar.svelte`. Button is absent entirely when `previewURL` is falsy. Hugo never builds drafts so there is no meaningful preview URL for drafts. Fix in fork: disable button when `entry.data.draft === true`.
+
 **Confirmed capabilities** (useful when planning future CMS features):
 - `preSave`/`postSave` event hooks — JS that runs before/after each save, can modify entry data (used for hashtag extraction)
 - `widget: image` with `multiple: true` — multi-select, drag-drop, clipboard paste (used for gallery field)
@@ -323,11 +327,21 @@ Remove both before launch.
 
 ## Pending Work
 
+### Sveltia Fork (in progress — plan at `docs/superpowers/plans/2026-06-06-sveltia-fork.md`)
+
+Fork of Sveltia CMS at tag `v0.166.0`. Fork lives at `/home/n0xx/Code/infra/service/sveltia-cms`. Build output (`dist/sveltia-cms.js`) committed to this repo at `static/admin/sveltia-cms.js`. `static/admin/index.html` loads local file instead of CDN once fork is wired in.
+
+**Phase 1 — Infrastructure:** Fork repo, verify pnpm build, wire local build to `index.html`
+**Phase 2 — Quick wins:** PT-PT locale (`src/lib/locales/pt.yaml`), disable "View on live site" for drafts (`toolbar.svelte`), scroll broken in thumbnail mode (CSS)
+**Phase 3 — Media picker:** Ctrl+A inserts all images (internal reactive state fix), media list cache refresh, pre-select after upload
+**Phase 4 — Editor scroll:** Preview↔edit scroll sync
+**Phase 5 — Heavy features:** Multi-select drag-drop ordering, inline create Events/Authors (deferred)
+
+Monkey-patches in `index.html` (Ctrl+A, thumbnail redirect, upload toast) should be removed from the file once the fork handles them natively.
+
 ### Not yet implemented
 
-- **Visual design** — Final aesthetic not chosen. n0xx is actively iterating on color scheme, typography, and homepage layout. Current working config: dark-metal + Bebas Neue + Playfair. Hero and background layouts built but not battle-tested with real article content.
-- **Bilingual authoring workflow** — EN translations for articles. Translation-by-filename is set up but no EN content exists yet. Sveltia i18n per-field config not yet added.
-- **Custom domain** — still on `musictide.pages.dev`.
+- **Custom domain** — still on `musictide.pages.dev`. When ready: update `ALLOWED_DOMAINS` in `wrangler.toml`, add domain to Google OAuth authorised JS origins.
 - **Video hosting strategy** — not started.
 
 ### Known issues / to investigate
@@ -336,17 +350,20 @@ Remove both before launch.
 - **Single-category limit in CMS** — The `category` relation field in the posts collection is a single-value widget. Some scraped articles have multiple categories in frontmatter (`categories: [A, B]`), but a CMS editor can only assign one. Decide: allow multi-select in CMS (change widget to `multiple: true`) or enforce single-category as a content rule.
 - **Front page deduplication logic** — It is unclear what prevents an article from appearing more than once on the homepage (e.g. via both the hero and the card grid). Needs a code review of `hero.html` + the HTMX fragment to document and verify the deduplication criteria.
 - **Search / tags / categories interplay** — No review has been done of how Pagefind search, the `#hashtag` tag system, and the categories taxonomy interact. Needs a pass to check for gaps (e.g. tags not indexed, category pages not surfaced in search).
+- **Contributor photos** — 14/15 contributors still have letter avatars; one has a photo.
 
 ### Cleanup
 
 - **Mock ads** — `content/ads/ariel-destaque.md` and `content/ads/skip-mock.md` to remove before launch.
 - **`workers/r2-upload/`** — Redundant Worker still present in repo. Safe to delete.
+- **Ctrl+A monkey-patch in `index.html`** — Remove once fork handles it natively (fork Task 7).
 
 ### Future consideration
 
 - **`login` field wiring** — `login` in the KV user record is stored in `mt-current-user` localStorage but not yet used. Intended to link a logged-in user to their `content/authors/` profile. Wire up when CMS user management is in active use.
 - **Block-based content model** — Evaluated on 2026-03-22 (Path B). Would replace the single body text field with a list of typed blocks (text, image, gallery) giving the photographer layout control. Not implemented — current approach (body text + separate gallery field) was chosen for simplicity. Revisit if photographer needs more editorial control. Sveltia's `widget: list` with object `types` supports this pattern.
-- **CMS replacement** — Tina CMS (keeps Hugo, better editor) or Nuxt + Nuxt Studio (full rebuild, best editor UX) were evaluated on 2026-03-22 and deferred.
+- **EN article translations** — Translation-by-filename is set up, no EN content exists yet. Low priority.
+- **CMS sidebar cleanup** — Estilo Visual as top-level collection, reorder sidebar items.
 
 ---
 
@@ -382,6 +399,7 @@ Condensed timeline of key milestones:
 | 2026-05-01 | Ads display implemented: `destaque` CMS field added; `ads-data.html` embeds non-draft ads as JSON blob in `<head>`; `ad-slot.html` reveals destaque card below hero + injects feed ads between HTMX scroll batches via `htmx:afterSettle`; URL XSS sanitised via `safeUrl()`; adjacent-ad guard prevents duplicates from month-merge race. Hero mobile portrait fix: `80svh` on `max-width:640px portrait`. HTMX sentinel rootMargin increased to 600px. Mock articles confirmed replaced by real photographer content. |
 | 2026-05-14 | Google Sign-In auth shipped. Replaced `sveltia-cms-auth` (GitHub OAuth) with `musictide-auth` Worker (Google GIS SDK + Cloudflare KV user registry). Users log in with Google; Worker verifies JWT, looks up email in KV, issues shared GitHub service account PAT to Sveltia. Commit author injection added to `index.html` fetch interceptor — `git log` shows real contributor name/email. `workers/r2-upload/` deleted (was already redundant). Google OAuth app published to production. |
 | 2026-05-15 | CMS user management shipped. `cms-users` Sveltia collection (`data/cms-users/`, JSON format) lets the photographer add/remove CMS users without developer involvement. GitHub push webhook → `POST /sync-users` on `musictide-auth` Worker; HMAC-SHA256 verified, timing-safe comparison, full KV reconciliation on each relevant push. No GitHub Actions, no Cloudflare API token in GitHub secrets — all credentials stay in Cloudflare Workers. |
+| 2026-06-06 | Sveltia bumped to 0.166.0. Ctrl+A select-all media picker fix shipped (c0d46a8): Sveltia mounts all ~24 dialogs in DOM simultaneously at `opacity:0`; old selector grabbed the wrong one; fixed with `.open.active` guard. Thumbnail 404-after-upload fix shipped: `uploadedKeys` map + CDN redirect intercept + MutationObserver on `img[src]`. Upload progress toast shipped: XHR progress events → toast injected into `.sui.spacer` inside active dialog. Full backlog of 11 CMS issues triaged — 9/11 are unfixable without forking Sveltia. Fork decision made: `sveltia-cms` fork at `/home/n0xx/Code/infra/service/sveltia-cms`, build output committed to `static/admin/sveltia-cms.js`. Fork implementation plan at `docs/superpowers/plans/2026-06-06-sveltia-fork.md`. |
 
 
 ---

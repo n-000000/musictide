@@ -141,12 +141,7 @@
         }
 
         function hideUploadProgress() {
-          var toast = document.getElementById('mt-upload-toast');
-          if (!toast) return;
-          toast.style.opacity = '0';
-          setTimeout(function() {
-            if (toast.style.opacity === '0') toast.remove();
-          }, 250);
+          // DEBUG: leave toast in DOM for inspection — re-enable removal once visible
         }
 
         // Helper: upload via presigned URL using XHR for progress feedback.

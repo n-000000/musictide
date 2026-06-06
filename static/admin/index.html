@@ -107,24 +107,25 @@
           return _fetch.call(window, newUrl, newInit);
         }
 
-        // Progress toast — renders inside the footer spacer (the flex gap to the left of
-        // Insert/Cancel). Avoids the dynamic #cXXX container ID; .sui.spacer is Sveltia's
-        // stable design-system class. Falls back to a centered dialog overlay if not found.
+        // Progress toast — injected into every .sui.spacer inside every dialog so it
+        // appears in whichever dialog is actually visible. Only one dialog is open at
+        // a time, so exactly one spacer will be seen. Falls back to a centered overlay.
         function showUploadProgress(filename) {
-          var existing = document.getElementById('mt-upload-toast');
-          if (existing) existing.remove();
+          document.querySelectorAll('.mt-upload-toast').forEach(function(el) { el.remove(); });
           var name = filename.split('/').pop();
-          var spacer = document.querySelector('[role="dialog"] .footer .sui.spacer');
-          if (spacer) {
-            var toast = document.createElement('span');
-            toast.id = 'mt-upload-toast';
-            toast.style.cssText = 'font:13px/1 system-ui,sans-serif;opacity:0.75;';
-            toast.textContent = 'A enviar ' + name + '... 0%';
-            spacer.appendChild(toast);
-            return toast;
+          var spacers = document.querySelectorAll('[role="dialog"] .footer .sui.spacer');
+          if (spacers.length) {
+            spacers.forEach(function(spacer) {
+              var toast = document.createElement('span');
+              toast.className = 'mt-upload-toast';
+              toast.style.cssText = 'font:13px/1 system-ui,sans-serif;opacity:0.75;';
+              toast.textContent = 'A enviar ' + name + '... 0%';
+              spacer.appendChild(toast);
+            });
+            return;
           }
           var toast = document.createElement('div');
-          toast.id = 'mt-upload-toast';
+          toast.className = 'mt-upload-toast';
           toast.style.cssText = [
             'position:fixed', 'top:50%', 'left:50%',
             'transform:translate(-50%,-50%)',
@@ -137,11 +138,10 @@
           ].join(';');
           (document.querySelector('[role="dialog"]') || document.body).appendChild(toast);
           toast.textContent = 'A enviar ' + name + '... 0%';
-          return toast;
         }
 
         function hideUploadProgress() {
-          // DEBUG: leave toast in DOM for inspection — re-enable removal once visible
+          document.querySelectorAll('.mt-upload-toast').forEach(function(el) { el.remove(); });
         }
 
         // Helper: upload via presigned URL using XHR for progress feedback.
@@ -180,7 +180,7 @@
               if (actualKey.startsWith(pathParts[0] + '/')) actualKey = actualKey.slice(pathParts[0].length + 1);
               uploadedKeys.set(key.split('/').pop(), actualKey);
             } catch(e) {}
-            var toast = showUploadProgress(key);
+            showUploadProgress(key);
 
             // Step 2: PUT directly to R2 via XHR for progress tracking
             return new Promise(function(resolve, reject) {
@@ -189,8 +189,8 @@
               xhr.upload.onprogress = function(e) {
                 if (e.lengthComputable) {
                   var pct = Math.round((e.loaded / e.total) * 100);
-                  var name = key.split('/').pop();
-                  toast.textContent = 'A enviar ' + name + '... ' + pct + '%';
+                  var label = 'A enviar ' + key.split('/').pop() + '... ' + pct + '%';
+                  document.querySelectorAll('.mt-upload-toast').forEach(function(t) { t.textContent = label; });
                 }
               };
 

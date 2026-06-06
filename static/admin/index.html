@@ -295,11 +295,13 @@
 
         // Ctrl/Cmd+A selects all items in the media picker dialog.
         // preventDefault always fires when a dialog is open (prevents browser select-all).
-        // Media items always have a thumbnail <img> — walk up from each img to the
-        // nearest selectable container, dedupe, and click unselected ones.
+        // Sveltia mounts ALL dialogs in the DOM at opacity:0 — only the active one has .open.active.
+        // Media items are button[role="option"] inside a listbox; each contains a thumbnail <img>.
+        // Walk up from each img to the nearest [role="option"], dedupe, click unselected ones.
         document.addEventListener('keydown', function(e) {
           if (!((e.ctrlKey || e.metaKey) && e.key === 'a')) return;
-          var dialog = document.querySelector('[role="dialog"]');
+          // Sveltia mounts all dialogs in the DOM at opacity:0; only the active one gets .open.active
+          var dialog = document.querySelector('[role="dialog"].open.active, [role="alertdialog"].open.active');
           if (!dialog) return;
           e.preventDefault();
           var seen = new Set();

@@ -293,31 +293,7 @@
           }).observe(document.documentElement, { childList: true, subtree: true, attributes: true, attributeFilter: ['src'] });
         })();
 
-        // Ctrl/Cmd+A selects all items in the media picker dialog.
-        // preventDefault always fires when a dialog is open (prevents browser select-all).
-        // Sveltia mounts ALL dialogs in the DOM at opacity:0 — only the active one has .open.active.
-        // Media items are button[role="option"] inside a listbox; each contains a thumbnail <img>.
-        // Walk up from each img to the nearest [role="option"], dedupe, click unselected ones.
-        document.addEventListener('keydown', function(e) {
-          if (!((e.ctrlKey || e.metaKey) && e.key === 'a')) return;
-          // Sveltia mounts all dialogs in the DOM at opacity:0; only the active one gets .open.active
-          var dialog = document.querySelector('[role="dialog"].open.active, [role="alertdialog"].open.active');
-          if (!dialog) return;
-          e.preventDefault();
-          var seen = new Set();
-          var items = [];
-          dialog.querySelectorAll('img').forEach(function(img) {
-            var el = img.closest('li, [role="option"], [role="gridcell"], [role="treeitem"]');
-            if (el && !seen.has(el) && el.getAttribute('aria-selected') !== 'true') {
-              seen.add(el); items.push(el);
-            }
-          });
-          // Fallback: checkboxes (some Sveltia views still use them)
-          if (!items.length) {
-            dialog.querySelectorAll('input[type="checkbox"]:not(:checked)').forEach(function(cb) { items.push(cb); });
-          }
-          items.forEach(function(el) { el.click(); });
-        });
+        // Ctrl+A is now handled natively in the fork (assets-panel.svelte).
       })();
     </script>
 

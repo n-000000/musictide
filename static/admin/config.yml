@@ -46,7 +46,9 @@ collections:
         display_fields: [title]
         dropdown_threshold: 0
         required: false
-        hint: "Evento associado (ex: Vagos Metal Fest 2025). Crie o evento primeiro em Eventos."
+        inline_create: true
+        create_label: "Criar evento…"
+        hint: "Evento associado (ex: Vagos Metal Fest 2025)."
 
       - label: Título
         name: title
@@ -81,6 +83,8 @@ collections:
         display_fields: [title]
         dropdown_threshold: 0
         required: false
+        inline_create: true
+        create_label: "Criar colaborador…"
         hint: "Autor do texto"
 
       - label: Fotos
@@ -92,6 +96,8 @@ collections:
         display_fields: [title]
         dropdown_threshold: 0
         required: false
+        inline_create: true
+        create_label: "Criar colaborador…"
         hint: "Autor das fotografias"
 
       - label: Vídeo
@@ -103,6 +109,8 @@ collections:
         display_fields: [title]
         dropdown_threshold: 0
         required: false
+        inline_create: true
+        create_label: "Criar colaborador…"
         hint: "Autor do vídeo (se aplicável)"
 
       - label: Texto

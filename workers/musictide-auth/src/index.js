@@ -5,23 +5,28 @@
  * OAuth flow. The popup stays on musictide-auth.leftfield.workers.dev throughout,
  * so window.opener is never severed by Google's COOP headers. The GIS button
  * returns a signed JWT credential; we verify it with Google's tokeninfo API,
- * look up the email in KV, and postMessage the result back to the opener.
+ * look up the user in KV by sub_token (HMAC of Google user ID), and postMessage
+ * the result back to the opener.
  *
  * Endpoints:
  *   GET /auth?provider=github&site_id=<domain>  — serve GIS login page
  *   POST /verify                                 — verify GIS credential JWT
+ *   POST /compute-token                          — compute HMAC token for an email (PAT-auth'd)
  *   POST /sync-users                             — GitHub push webhook → KV sync
  *   OPTIONS *                                    — CORS preflight
  *   GET /                                        — health check
  *
  * Required secrets (wrangler secret put):
- *   GOOGLE_CLIENT_ID, GITHUB_SERVICE_ACCOUNT_PAT, WEBHOOK_SECRET
+ *   GOOGLE_CLIENT_ID, GITHUB_SERVICE_ACCOUNT_PAT, WEBHOOK_SECRET, GLOBAL_SALT
  *   (GOOGLE_CLIENT_SECRET no longer needed — GIS uses client-side flow)
  *
- * KV (USERS binding): key = google email, value = {"name":"...","login":"..."}
+ * KV (USERS binding): key = HMAC-SHA256(GLOBAL_SALT, google_sub), value = {"name":"...","email":"..."}
+ *   Legacy keys (HMAC of email) are auto-upgraded to sub-based keys on first login.
  */
 
 const CORS_ORIGIN = 'https://musictide.pages.dev';
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
 
 function isAllowedDomain(siteId, allowedDomains) {
   return (allowedDomains || '')
@@ -40,6 +45,29 @@ function jsonResponse(data, status = 200) {
   });
 }
 
+/**
+ * Compute HMAC-SHA256(saltHex, value) and return the result as a hex string.
+ * @param {string} saltHex  32-byte salt as 64 hex characters (from GLOBAL_SALT secret).
+ * @param {string} value    The string to hash (Google sub or email).
+ * @returns {Promise<string>}
+ */
+async function hmac(saltHex, value) {
+  const saltBytes = new Uint8Array(saltHex.match(/.{2}/g).map(b => parseInt(b, 16)));
+  const key = await crypto.subtle.importKey(
+    'raw',
+    saltBytes,
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign'],
+  );
+  const sig = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(value));
+  return Array.from(new Uint8Array(sig))
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('');
+}
+
+// ── Handlers ──────────────────────────────────────────────────────────────────
+
 async function syncUsers(env) {
   const ghHeaders = {
     'User-Agent': 'musictide-auth',
@@ -50,7 +78,7 @@ async function syncUsers(env) {
     'https://api.github.com/repos/n-000000/musictide/contents/data/cms-users',
     { headers: ghHeaders }
   );
-  if (listRes.status === 404) return; // directory not yet created — nothing to sync
+  if (listRes.status === 404) return;
   if (!listRes.ok) throw new Error('GitHub API ' + listRes.status);
 
   const files = await listRes.json();
@@ -64,7 +92,7 @@ async function syncUsers(env) {
         const r = await fetch(f.download_url, { headers: ghHeaders });
         if (!r.ok) throw new Error('Failed to fetch ' + f.name + ': ' + r.status);
         const data = await r.json();
-        if (data.email) desired.set(data.email, { name: data.name || '', login: data.login || '' });
+        if (data.token) desired.set(data.token, { name: data.name || '' });
       })
   );
 
@@ -79,7 +107,7 @@ async function syncUsers(env) {
 
   await Promise.all([
     ...[...current].filter(k => !desired.has(k)).map(k => env.USERS.delete(k)),
-    ...[...desired.entries()].map(([email, rec]) => env.USERS.put(email, JSON.stringify(rec))),
+    ...[...desired.entries()].map(([tok, rec]) => env.USERS.put(tok, JSON.stringify(rec))),
   ]);
 }
 
@@ -213,23 +241,18 @@ async function handleAuth(request, env) {
         cancel_on_tap_outside: false,
         use_fedcm_for_prompt: true,
       });
-      // Render the official button — clicking it provides the user gesture
-      // Chrome requires on Android for FedCM to show inline (no second popup).
       google.accounts.id.renderButton(document.getElementById('gsi-btn'), {
         type: 'standard', size: 'large', theme: 'filled_black',
         text: 'signin_with', shape: 'rectangular', logo_alignment: 'left',
       });
     }
 
-    // Fallback: plain button triggers prompt() with a user gesture.
-    // Used if renderButton fails (e.g. GIS script blocked).
     function triggerPrompt() {
       if (window.google && google.accounts) {
         google.accounts.id.prompt();
       }
     }
 
-    // Show plain fallback button if GIS script fails to load.
     document.querySelector('script[src*="gsi/client"]').addEventListener('error', function () {
       document.getElementById('signin-btn').style.display = 'inline-block';
       document.getElementById('status').textContent = 'Google indisponível neste browser.';
@@ -261,7 +284,7 @@ async function handleAuth(request, env) {
           }
           window.close();
         })
-        .catch(function (err) {
+        .catch(function () {
           document.getElementById('status').textContent = 'Erro de ligação. Tente novamente.';
           document.getElementById('status').className = 'error';
         });
@@ -283,7 +306,6 @@ async function handleVerify(request, env) {
     return jsonResponse({ error: 'invalid_request' }, 400);
   }
 
-  // Verify the GIS JWT with Google's tokeninfo endpoint
   const verifyRes = await fetch(
     'https://oauth2.googleapis.com/tokeninfo?id_token=' + encodeURIComponent(credential),
   );
@@ -294,19 +316,55 @@ async function handleVerify(request, env) {
   if (payload.aud !== env.GOOGLE_CLIENT_ID) return jsonResponse({ error: 'invalid_audience' }, 401);
   if (payload.email_verified !== 'true') return jsonResponse({ error: 'email_not_verified' }, 401);
 
-  const record = await env.USERS.get(payload.email, { type: 'json' });
-  if (!record) return jsonResponse({ error: 'unauthorized — ' + payload.email + ' not registered' }, 403);
+  // Sub-token lookup (preferred: stable, opaque)
+  const subToken = await hmac(env.GLOBAL_SALT, payload.sub);
+  let record = await env.USERS.get(subToken, { type: 'json' });
+
+  if (!record) {
+    // Email-token fallback (legacy: pre-migration entries)
+    const emailToken = await hmac(env.GLOBAL_SALT, payload.email);
+    record = await env.USERS.get(emailToken, { type: 'json' });
+    if (record) {
+      // Auto-upgrade: swap to sub-keyed entry, store email for audit display
+      await env.USERS.put(subToken, JSON.stringify({ ...record, email: payload.email }));
+      await env.USERS.delete(emailToken);
+    }
+  }
+
+  if (!record) return jsonResponse({ error: 'access_denied' }, 403);
 
   return jsonResponse({
     pat: env.GITHUB_SERVICE_ACCOUNT_PAT,
     userData: {
       name: record.name || payload.name,
-      login: record.login,
       email: payload.email,
       avatar: payload.picture || '',
     },
   });
 }
+
+async function handleComputeToken(request, env) {
+  const auth = request.headers.get('Authorization') || '';
+  if (auth !== 'Bearer ' + env.GITHUB_SERVICE_ACCOUNT_PAT) {
+    return jsonResponse({ error: 'unauthorized' }, 401);
+  }
+
+  let email;
+  try {
+    ({ email } = await request.json());
+  } catch {
+    return jsonResponse({ error: 'invalid_request' }, 400);
+  }
+
+  if (!email || typeof email !== 'string') {
+    return jsonResponse({ error: 'email_required' }, 400);
+  }
+
+  const token = await hmac(env.GLOBAL_SALT, email);
+  return jsonResponse({ token });
+}
+
+// ── Router ────────────────────────────────────────────────────────────────────
 
 export default {
   async fetch(request, env) {
@@ -318,7 +376,7 @@ export default {
         headers: {
           'Access-Control-Allow-Origin': '*',
           'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-          'Access-Control-Allow-Headers': 'Content-Type',
+          'Access-Control-Allow-Headers': 'Content-Type, Authorization',
         },
       });
     }
@@ -329,6 +387,10 @@ export default {
 
     if (pathname === '/verify' && request.method === 'POST') {
       return handleVerify(request, env);
+    }
+
+    if (pathname === '/compute-token' && request.method === 'POST') {
+      return handleComputeToken(request, env);
     }
 
     if (pathname === '/sync-users' && request.method === 'POST') {

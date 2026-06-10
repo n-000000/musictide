@@ -168,7 +168,6 @@ describe('POST /verify', () => {
 
     const upgraded = JSON.parse(env.USERS._store.get(subToken));
     expect(upgraded.name).toBe('Legacy User');
-    expect(upgraded.email).toBe('user@gmail.com');
   });
 
   it('does not auto-upgrade when sub_token already present', async () => {
@@ -187,14 +186,14 @@ describe('POST /verify', () => {
 // ── /compute-token ────────────────────────────────────────────────────────────
 
 describe('POST /compute-token', () => {
-  function tokenRequest(email, authHeader) {
+  function tokenRequest(email, authHeader, name) {
     return new Request('https://worker.dev/compute-token', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         ...(authHeader ? { Authorization: authHeader } : {}),
       },
-      body: JSON.stringify({ email }),
+      body: JSON.stringify(name !== undefined ? { email, name } : { email }),
     });
   }
 
@@ -250,5 +249,26 @@ describe('POST /compute-token', () => {
     const r1 = await worker.fetch(tokenRequest('alice@gmail.com', 'Bearer test-pat'), env);
     const r2 = await worker.fetch(tokenRequest('bob@gmail.com', 'Bearer test-pat'), env);
     expect((await r1.json()).token).not.toBe((await r2.json()).token);
+  });
+
+  it('upserts {name} to KV immediately when name is provided', async () => {
+    const env = makeEnv();
+    const res = await worker.fetch(
+      tokenRequest('user@gmail.com', 'Bearer test-pat', 'Ngon'),
+      env,
+    );
+    expect(res.status).toBe(200);
+    const { token } = await res.json();
+
+    expect(env.USERS._store.has(token)).toBe(true);
+    const stored = JSON.parse(env.USERS._store.get(token));
+    expect(stored.name).toBe('Ngon');
+  });
+
+  it('does not touch KV when name is absent', async () => {
+    const env = makeEnv();
+    const kvPutSpy = vi.spyOn(env.USERS, 'put');
+    await worker.fetch(tokenRequest('user@gmail.com', 'Bearer test-pat'), env);
+    expect(kvPutSpy).not.toHaveBeenCalled();
   });
 });

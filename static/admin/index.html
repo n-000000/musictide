@@ -349,13 +349,14 @@
           }
 
           try {
+            const name = data.get('name') || '';
             const res = await fetch('https://musictide-auth.leftfield.workers.dev/compute-token', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
                 'Authorization': 'Bearer ' + pat,
               },
-              body: JSON.stringify({ email }),
+              body: JSON.stringify({ email, name }),
             });
             if (!res.ok) throw new Error('compute-token returned ' + res.status);
             const { token } = await res.json();

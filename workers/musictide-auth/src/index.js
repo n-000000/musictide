@@ -325,8 +325,8 @@ async function handleVerify(request, env) {
     const emailToken = await hmac(env.GLOBAL_SALT, payload.email);
     record = await env.USERS.get(emailToken, { type: 'json' });
     if (record) {
-      // Auto-upgrade: swap to sub-keyed entry, store email for audit display
-      await env.USERS.put(subToken, JSON.stringify({ ...record, email: payload.email }));
+      // Auto-upgrade: swap to sub-keyed entry; email comes from JWT on every login
+      await env.USERS.put(subToken, JSON.stringify({ name: record.name }));
       await env.USERS.delete(emailToken);
     }
   }
@@ -349,9 +349,9 @@ async function handleComputeToken(request, env) {
     return jsonResponse({ error: 'unauthorized' }, 401);
   }
 
-  let email;
+  let email, name;
   try {
-    ({ email } = await request.json());
+    ({ email, name } = await request.json());
   } catch {
     return jsonResponse({ error: 'invalid_request' }, 400);
   }
@@ -361,6 +361,13 @@ async function handleComputeToken(request, env) {
   }
 
   const token = await hmac(env.GLOBAL_SALT, email);
+
+  // If name is provided, upsert the user into KV immediately so login works
+  // without waiting for the sync-users webhook. The webhook is now idempotent.
+  if (name && typeof name === 'string') {
+    await env.USERS.put(token, JSON.stringify({ name }));
+  }
+
   return jsonResponse({ token });
 }
 

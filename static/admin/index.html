@@ -319,6 +319,53 @@
           return entry.get('data').set('tags', tags);
         },
       });
+
+      // ── CMS User token — email → HMAC token ─────────────────────
+      // When saving a cms-users entry: if the email field is present,
+      // call /compute-token on the auth Worker (PAT-authenticated) to
+      // get HMAC-SHA256(GLOBAL_SALT, email) and store it as `token`.
+      // The email field is cleared so it is never committed to the repo.
+      CMS.registerEventListener({
+        name: 'preSave',
+        handler: async ({ entry }) => {
+          if (entry.get('collection') !== 'cms-users') return entry.get('data');
+
+          const data = entry.get('data');
+          const email = data.get('email');
+
+          if (!email || typeof email !== 'string' || !email.includes('@')) {
+            return data.delete('email');
+          }
+
+          let pat;
+          try {
+            const stored = localStorage.getItem('sveltia-cms.user');
+            if (stored) pat = JSON.parse(stored).token;
+          } catch (_) {}
+
+          if (!pat) {
+            console.error('[cms-users] preSave: no PAT in localStorage');
+            return data.delete('email');
+          }
+
+          try {
+            const res = await fetch('https://musictide-auth.leftfield.workers.dev/compute-token', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + pat,
+              },
+              body: JSON.stringify({ email }),
+            });
+            if (!res.ok) throw new Error('compute-token returned ' + res.status);
+            const { token } = await res.json();
+            return data.set('token', token).delete('email');
+          } catch (err) {
+            console.error('[cms-users] preSave: failed to compute token', err);
+            return data.delete('email');
+          }
+        },
+      });
     </script>
   </head>
   <body>

@@ -457,10 +457,10 @@ collections:
         name: email
         widget: string
         pattern: ['^[^@\s]+@[^@\s]+\.[^@\s]+$', 'Deve ser um endereço de email válido']
-        hint: "Endereço Gmail com que o utilizador faz login no CMS. ATENÇÃO: remover este registo remove o acesso do utilizador ao CMS."
+        hint: "Endereço Gmail do utilizador. Será convertido automaticamente num token seguro — nunca é guardado no repositório."
 
-      - label: Slug de Autor
-        name: login
+      - label: Token
+        name: token
         widget: string
         required: false
-        hint: "Slug da página de colaborador em /colaboradores/ (ex: joao-silva). Opcional."
+        hint: "Preenchido automaticamente ao guardar. Não editar manualmente."

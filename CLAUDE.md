@@ -327,17 +327,28 @@ Remove both before launch.
 
 ## Pending Work
 
-### Sveltia Fork (in progress — plan at `docs/superpowers/plans/2026-06-06-sveltia-fork.md`)
+### Sveltia Fork (active — plan at `docs/superpowers/plans/2026-06-06-sveltia-fork.md`)
 
-Fork of Sveltia CMS at tag `v0.166.0`. Fork lives at `/home/n0xx/Code/infra/service/sveltia-cms`. Build output (`dist/sveltia-cms.js`) committed to this repo at `static/admin/sveltia-cms.js`. `static/admin/index.html` loads local file instead of CDN once fork is wired in.
+Fork of Sveltia CMS at tag `v0.166.0`. Fork lives at `/home/n0xx/Code/infra/service/sveltia-cms` on branch `musictide-patches`. Build output committed to this repo at `static/admin/sveltia-cms.js`; `static/admin/index.html` loads the local file (CDN reference replaced as of `b76c50f`).
 
-**Phase 1 — Infrastructure:** Fork repo, verify pnpm build, wire local build to `index.html`
-**Phase 2 — Quick wins:** PT-PT locale (`src/lib/locales/pt.yaml`), disable "View on live site" for drafts (`toolbar.svelte`), scroll broken in thumbnail mode (CSS)
-**Phase 3 — Media picker:** Ctrl+A inserts all images (internal reactive state fix), media list cache refresh, pre-select after upload
-**Phase 4 — Editor scroll:** Preview↔edit scroll sync
-**Phase 5 — Heavy features:** Multi-select drag-drop ordering, inline create Events/Authors (deferred)
+**All planned patches complete as of 2026-06-13:**
+- PT-PT locale, hide "View on live site" for drafts, editor scroll sync fix
+- Local repo AbortError fix (`showDirectoryPicker` before IndexedDB)
+- Ctrl+A select-all in both internal and external media pickers (monkey-patch removed from `index.html`)
+- Media list cache refresh, multi-select + drag-drop gallery ordering, DropZone false-positive fix
+- Inline create Events/Authors from relation field
+- Gallery picker auto-selects all R2 files on open (no Ctrl+A needed)
+- Toast Alert guard
 
-Monkey-patches in `index.html` (Ctrl+A, thumbnail redirect, upload toast) should be removed from the file once the fork handles them natively.
+**Permanent monkey-patches remaining in `index.html`** (these are musictide integrations, not UX patches — the fork doesn't replace them):
+- R2 proxy fetch interceptor (S3 → proxy Worker rewrite, presigned PUT, progress toast, thumbnail redirect)
+- GitHub commit author injection
+- Dummy R2 credential pre-seeding
+- preSave hooks (hashtag extraction, cms-users HMAC token computation)
+- Stock photo service CSS hide
+
+**Pending fork work:**
+- Unify "Colaboradores" and "Utilizadores" collections into Sveltia
 
 ### Not yet implemented
 
@@ -356,7 +367,7 @@ Monkey-patches in `index.html` (Ctrl+A, thumbnail redirect, upload toast) should
 
 - **Mock ads** — `content/ads/ariel-destaque.md` and `content/ads/skip-mock.md` to remove before launch.
 - **`workers/r2-upload/`** — Redundant Worker still present in repo. Safe to delete.
-- **Ctrl+A monkey-patch in `index.html`** — Remove once fork handles it natively (fork Task 7).
+- ~~**Ctrl+A monkey-patch in `index.html`**~~ — Removed (musictide `b76c50f`); fork handles it natively.
 
 ### Future consideration
 

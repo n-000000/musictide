@@ -85,8 +85,6 @@ collections:
         display_fields: [title]
         dropdown_threshold: 0
         required: false
-        inline_create: true
-        create_label: "Criar colaborador…"
         hint: "Autor do texto"
 
       - label: Fotos
@@ -98,8 +96,6 @@ collections:
         display_fields: [title]
         dropdown_threshold: 0
         required: false
-        inline_create: true
-        create_label: "Criar colaborador…"
         hint: "Autor das fotografias"
 
       - label: Vídeo
@@ -111,8 +107,6 @@ collections:
         display_fields: [title]
         dropdown_threshold: 0
         required: false
-        inline_create: true
-        create_label: "Criar colaborador…"
         hint: "Autor do vídeo (se aplicável)"
 
       - label: Texto

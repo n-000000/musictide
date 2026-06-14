@@ -453,10 +453,11 @@ collections:
         name: email
         widget: string
         pattern: ['^[^@\s]+@[^@\s]+\.[^@\s]+$', 'Deve ser um endereço de email válido']
-        hint: "Endereço Gmail do utilizador. Será convertido automaticamente num token seguro — nunca é guardado no repositório."
+        hint: "Email do utilizador. Após guardar, este campo fica vazio — o token de acesso é gerado automaticamente a partir do email e guardado no campo abaixo."
 
       - label: Token
         name: token
         widget: string
         required: false
+        readonly: true
         hint: "Preenchido automaticamente ao guardar. Não editar manualmente."

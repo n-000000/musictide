@@ -8,6 +8,8 @@ local_backend: true
 
 site_url: https://musictide.pages.dev
 
+locale: pt
+
 media_libraries:
   cloudflare_r2:
     access_key_id: e04ffceffcb454326996be5a9af00865

@@ -1,0 +1,2 @@
+replacements:
+  - github.com/n-000000/blowfish/v2 -> /home/n0xx/Code/infra/service/blowfish

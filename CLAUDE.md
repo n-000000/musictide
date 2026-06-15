@@ -232,7 +232,7 @@ Six CMS collections, all live and operational:
 
 **Tags** are not a CMS field — they are extracted automatically from `#hashtags` in the body text by the preSave hook.
 
-**Ads note:** Ads are paid placement (transactional, not per-click). Two slots implemented: destaque (below hero on homepage + category pages) and feed (injected between HTMX scroll batches). The `destaque: true` field flags an ad for the below-hero position; only one should be active at a time (JS picks the first match). Mock ads `ariel-destaque.md` and `skip-mock.md` exist in `content/ads/` — remove before launch.
+**Ads note:** Ads are paid placement (transactional, not per-click). Two slots implemented: destaque (below hero on homepage + category pages) and feed (injected between HTMX scroll batches). The `destaque: true` field flags an ad for the below-hero position; only one should be active at a time (JS picks the first match). Mock/test ads `ariel-destaque.md`, `skip-mock.md`, and `cenas-fixes.md` exist in `content/ads/` — remove before launch.
 
 **Ad slot edge cases:**
 - No active ads → both slots stay hidden, no visible gap
@@ -305,11 +305,12 @@ All fields switchable via CMS at Definições → Estilo Visual.
 
 ## Mock Content
 
-Mock articles have been replaced with real content uploaded by the photographer via CMS. Two mock ads remain for testing:
+Mock articles have been replaced with real content uploaded by the photographer via CMS. Three mock/test ads remain:
 - `content/ads/ariel-destaque.md` — destaque mock (orange placeholder image)
 - `content/ads/skip-mock.md` — feed slot mock (blue placeholder image)
+- `content/ads/cenas-fixes.md` — expired test ad (active_until 2026-04-24, Wikimedia image)
 
-Remove both before launch.
+Remove all three before launch.
 
 ---
 
@@ -365,8 +366,8 @@ Fork of Sveltia CMS at tag `v0.166.0`. Fork lives at `/home/n0xx/Code/infra/serv
 
 ### Cleanup
 
-- **Mock ads** — `content/ads/ariel-destaque.md` and `content/ads/skip-mock.md` to remove before launch.
-- **`workers/r2-upload/`** — Redundant Worker still present in repo. Safe to delete.
+- **Mock ads** — `content/ads/ariel-destaque.md`, `content/ads/skip-mock.md`, and `content/ads/cenas-fixes.md` to remove before launch.
+- ~~**`workers/r2-upload/`**~~ — Deleted.
 - ~~**Ctrl+A monkey-patch in `index.html`**~~ — Removed (musictide `b76c50f`); fork handles it natively.
 
 ### Future consideration

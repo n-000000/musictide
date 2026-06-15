@@ -57,7 +57,7 @@ When implementing features, always consult local docs first:
 
 ## Architecture
 
-**Stack:** Hugo 0.158.0 Extended + Blowfish v2 (Hugo module) + Sveltia CMS + Cloudflare Pages + Cloudflare R2
+**Stack:** Hugo 0.163.0 Extended + Blowfish v2 (Hugo module) + Sveltia CMS + Cloudflare Pages + Cloudflare R2
 
 ### Hugo Module
 
@@ -99,7 +99,7 @@ git push origin main (GitHub: github.com/n-000000/musictide)
         ▼
 Cloudflare Pages (auto-detects push)
         │   Build: hugo --gc --minify
-        │   HUGO_VERSION = 0.158.0 (set in Pages dashboard env vars)
+        │   HUGO_VERSION = 0.163.0 (set in Pages dashboard env vars — update if local version changes)
         ▼
 public/ → Cloudflare CDN (PoP in Lisbon)
         │
@@ -316,7 +316,8 @@ Remove all three before launch.
 
 ## Known Quirks
 
-- **Blowfish version warning:** `WARN Module "github.com/nunocoracao/blowfish/v2" is not compatible with this Hugo version` — Blowfish v2 declares max Hugo 0.157.0 but we run 0.158.0. Soft warning, builds succeed. Ignore it.
+- **Blowfish version warning:** `WARN Module "github.com/nunocoracao/blowfish/v2" is not compatible with this Hugo version: 0.141.0/0.159.1 extended` — Blowfish v2 declares max Hugo 0.159.1 but we run 0.163.0. Soft warning, builds succeed. Will be resolved when the Blowfish fork module is wired up (fork tracks upstream which has removed this limit).
+- **Hugo deprecation warnings:** Two config-level warnings (`languageName` → `label`) were fixed 2026-06-15. Two template-level warnings (`.Site.LanguageCode` → `.Site.Language.Locale`) come from the vendored Blowfish v2.101.0 and will be resolved automatically when the Blowfish fork is wired up (upstream already patched).
 - **`public/` directory:** Exists locally from local builds. Gitignored. Do not commit it.
 - **`.worktrees/` is gitignored** — worktrees live at `.worktrees/<branch-name>`.
 - **Sveltia media cache bug:** Media list is fetched once per session. Uploading via one image field then opening another field's picker won't show the new file until page reload.

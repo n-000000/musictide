@@ -461,3 +461,14 @@ collections:
         required: false
         readonly: true
         hint: "Preenchido automaticamente ao guardar. Não editar manualmente."
+
+      - label: Biografia
+        name: biography
+        widget: relation
+        collection: authors
+        search_fields: [title]
+        value_field: title
+        display_fields: [title]
+        dropdown_threshold: 0
+        required: false
+        hint: "Perfil público associado a esta conta. Deixar vazio para utilizadores sem perfil público."

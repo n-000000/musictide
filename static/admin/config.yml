@@ -227,10 +227,10 @@ collections:
         default: "primary-500"
         hint: "Cor do badge da categoria, amostrada do esquema de cores activo"
 
-  # ── COLABORADORES ─────────────────────────────────────────────
+  # ── BIOGRAFIAS ────────────────────────────────────────────────
   - name: authors
-    label: Colaboradores
-    label_singular: Colaborador
+    label: Biografias
+    label_singular: Biografia
     folder: content/authors
     create: true
     fields:

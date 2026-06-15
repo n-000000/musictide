@@ -133,7 +133,7 @@ Sveltia CMS is the content management UI, served at `/admin/`. Users log in with
 
 ### Entry Point
 
-`static/admin/index.html` — loads Sveltia from CDN (pinned at `@sveltia/cms@0.149.1`). Also contains:
+`static/admin/index.html` — loads Sveltia from the **local fork bundle** (`/admin/sveltia-cms.js`, built from `/home/n0xx/Code/infra/service/sveltia-cms` branch `musictide-patches`, CDN reference replaced in musictide `b76c50f`). Also contains:
 - **R2 proxy fetch interceptor** — intercepts Sveltia's S3 API calls to R2, rewrites them to go through the proxy Worker instead. Strips AWS Signature V4 auth, injects GitHub Bearer token (service account PAT) from the CMS session, passes `X-Collection` header.
 - **Dummy R2 credential pre-seeding** — Sveltia prompts for an R2 secret key per session. Since the fetch interceptor handles auth, the actual R2 key is irrelevant. A dummy value is pre-seeded in `localStorage` to suppress the prompt.
 - **User metadata listener** — listens for `mt-user-data` postMessage from `musictide-auth` and stores `{ name, login, email, avatar }` in `localStorage` as `mt-current-user`.
@@ -191,7 +191,6 @@ Note: `workers/r2-upload/` still exists in the repo but is **redundant** — it 
 
 These are confirmed limitations that cannot be fixed from our side:
 - `registerMediaLibrary()` is NOT supported — hence the fetch interceptor approach
-- `locale` config option is NOT supported — UI follows browser locale; Portuguese unavailable
 - Rich text editor outputs Markdown only — no HTML mode, no tables, no image float/resize, no text alignment
 - Stock photo integration cannot be disabled (CSS hack hides it)
 - `widget: hidden` doesn't properly hide list/array fields
@@ -218,14 +217,15 @@ These are confirmed limitations that cannot be fixed from our side:
 
 ## Content Model
 
-Five CMS collections, all live and operational:
+Six CMS collections, all live and operational:
 
 | Collection | CMS name | Storage | Purpose |
 |------------|----------|---------|---------|
 | Articles | `posts` | `content/posts/` | Photography-heavy event posts. Fields: category (relation), title, date, featureimage, author, body (text widget), gallery (multi-image), draft |
 | Ads | `ads` | `content/ads/` | Paid placement ads. Fields: title, creative_image, click_through_url, active_from/until, destaque (bool), notes, draft |
 | Categories | `categories` | `content/categories/` | Lookup collection for article category relation. Fields: title, color (palette slot selector). Seeded: Cultura, Desporto, Lifestyle, Agenda, Espinho, Nacional. |
-| Contributors | `authors` | `content/authors/` | Contributor profiles. Fields: title, photo, bio, email + 10 social network URLs (instagram, facebook, x_twitter, bluesky, mastodon, threads, tiktok, youtube, soundcloud, spotify), draft |
+| Biografias | `authors` | `content/authors/` | Public contributor profiles. Fields: title (public name), photo, bio, pub_email + 9 social network URLs (instagram, facebook, x_twitter, bluesky, tiktok, youtube, spotify), draft. Generates Hugo taxonomy pages at `/authors/`. |
+| Utilizadores | `cms-users` | `data/cms-users/` | CMS auth accounts. Fields: name (git commit author), email (Google, cleared after token generation), token (readonly, HMAC-based), biography (optional relation to `authors`). |
 | Site Style | `settings` | `data/style.yaml` | File collection (single file). Palette, font, homepage layout, and listing style selection |
 
 **Body field** uses `widget: text` (plain text), not `widget: markdown`. Simpler for the photographer.
@@ -327,28 +327,28 @@ Remove both before launch.
 
 ## Pending Work
 
-### Sveltia Fork (active — plan at `docs/superpowers/plans/2026-06-06-sveltia-fork.md`)
+### Sveltia Fork (all backlog items resolved as of 2026-06-15)
 
 Fork of Sveltia CMS at tag `v0.166.0`. Fork lives at `/home/n0xx/Code/infra/service/sveltia-cms` on branch `musictide-patches`. Build output committed to this repo at `static/admin/sveltia-cms.js`; `static/admin/index.html` loads the local file (CDN reference replaced as of `b76c50f`).
 
-**All planned patches complete as of 2026-06-13:**
-- PT-PT locale, hide "View on live site" for drafts, editor scroll sync fix
+**All patches shipped and validated:**
+- Hide "View on live site" for drafts; editor scroll sync fix; Toast Alert guard
 - Local repo AbortError fix (`showDirectoryPicker` before IndexedDB)
 - Ctrl+A select-all in both internal and external media pickers (monkey-patch removed from `index.html`)
-- Media list cache refresh, multi-select + drag-drop gallery ordering, DropZone false-positive fix
-- Inline create Events/Authors from relation field
-- Gallery picker auto-selects all R2 files on open (no Ctrl+A needed)
-- Toast Alert guard
+- Media list cache refresh; multi-select + drag-drop gallery ordering; DropZone false-positive fix
+- Inline create Events from relation field (Authors disabled — lookup-only)
+- Gallery picker auto-selects all R2 files on open
+- PT-PT locale forced from `locale: pt` in config.yml (fork: `c4441290`, `45ab837f`)
+- Gallery preview click scrolls edit pane to the clicked image specifically (fork: `6c8c7ef7`, `a37166d4`)
+- token field readonly; email hint clarified (`4bd0b15`)
+- Colaboradores → Biografias rename; `biography` relation in Utilizadores (`17b1c34`, `da14dc7`)
 
-**Permanent monkey-patches remaining in `index.html`** (these are musictide integrations, not UX patches — the fork doesn't replace them):
+**Permanent monkey-patches remaining in `index.html`** (musictide integrations, not UX patches — the fork doesn't replace them):
 - R2 proxy fetch interceptor (S3 → proxy Worker rewrite, presigned PUT, progress toast, thumbnail redirect)
 - GitHub commit author injection
 - Dummy R2 credential pre-seeding
 - preSave hooks (hashtag extraction, cms-users HMAC token computation)
 - Stock photo service CSS hide
-
-**Pending fork work:**
-- Unify "Colaboradores" and "Utilizadores" collections into Sveltia
 
 ### Not yet implemented
 
@@ -411,6 +411,7 @@ Condensed timeline of key milestones:
 | 2026-05-14 | Google Sign-In auth shipped. Replaced `sveltia-cms-auth` (GitHub OAuth) with `musictide-auth` Worker (Google GIS SDK + Cloudflare KV user registry). Users log in with Google; Worker verifies JWT, looks up email in KV, issues shared GitHub service account PAT to Sveltia. Commit author injection added to `index.html` fetch interceptor — `git log` shows real contributor name/email. `workers/r2-upload/` deleted (was already redundant). Google OAuth app published to production. |
 | 2026-05-15 | CMS user management shipped. `cms-users` Sveltia collection (`data/cms-users/`, JSON format) lets the photographer add/remove CMS users without developer involvement. GitHub push webhook → `POST /sync-users` on `musictide-auth` Worker; HMAC-SHA256 verified, timing-safe comparison, full KV reconciliation on each relevant push. No GitHub Actions, no Cloudflare API token in GitHub secrets — all credentials stay in Cloudflare Workers. |
 | 2026-06-06 | Sveltia bumped to 0.166.0. Ctrl+A select-all media picker fix shipped (c0d46a8): Sveltia mounts all ~24 dialogs in DOM simultaneously at `opacity:0`; old selector grabbed the wrong one; fixed with `.open.active` guard. Thumbnail 404-after-upload fix shipped: `uploadedKeys` map + CDN redirect intercept + MutationObserver on `img[src]`. Upload progress toast shipped: XHR progress events → toast injected into `.sui.spacer` inside active dialog. Full backlog of 11 CMS issues triaged — 9/11 are unfixable without forking Sveltia. Fork decision made: `sveltia-cms` fork at `/home/n0xx/Code/infra/service/sveltia-cms`, build output committed to `static/admin/sveltia-cms.js`. Fork implementation plan at `docs/superpowers/plans/2026-06-06-sveltia-fork.md`. |
+| 2026-06-15 | All Sveltia fork backlog items resolved and validated. New patches: force PT-PT locale from config (`locale: pt` in config.yml, fork `c4441290`/`45ab837f`); gallery preview click scrolls to specific image in edit pane (fork `6c8c7ef7`/`a37166d4`); token field readonly + email hint clarified (`4bd0b15`); author inline-create disabled — lookup-only (`a962521`). Colaboradores collection renamed to Biografias; Utilizadores gains optional `biography` relation field linking to contributor profile (`17b1c34`, `da14dc7`). Design spec at `docs/superpowers/specs/2026-06-15-biografias-utilizadores-design.md`. |
 
 
 ---

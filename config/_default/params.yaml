@@ -11,12 +11,11 @@ enableCodeCopy: false
 header:
   layout: fixed
 
-# footer:
-#   showMenu: false
-#   showCopyright: true
-#   showThemeAttribution: false
-#   showAppearanceSwitcher: true
-#   showScrollToTop: true
+footer:
+  showMenu: false
+  showCopyright: false
+  showThemeAttribution: false
+  showScrollToTop: false
 
 homepage:
   layout: hero

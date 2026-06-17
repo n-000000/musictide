@@ -17,6 +17,3 @@ main:
   - name: Agenda
     url: /en/categories/agenda/
     weight: 60
-  - name: Contributors
-    url: /en/authors/
-    weight: 70

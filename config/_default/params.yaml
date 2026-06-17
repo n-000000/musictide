@@ -1,6 +1,7 @@
 mediaBaseURL: https://pub-576ea11202f543d0bf28d36ef63d18ff.r2.dev
 
 logo: logo_fixed.png
+banner_logo: logo_animated_opt.webp
 disableTextInHeader: true
 
 defaultAppearance: dark
@@ -32,9 +33,6 @@ article:
   heroStyle: big
 
 list:
-  # showHero: false
-  # heroStyle: big
-  # showCards: false
   showTableOfContents: false
-  showSummary: true
+  showSummary: false
   summaryLength: 0

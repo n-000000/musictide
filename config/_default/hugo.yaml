@@ -22,6 +22,12 @@ outputFormats:
     mediaType: text/html
     isHTML: true
     notAlternative: true
+  grid-fragment:
+    name: grid-fragment
+    baseName: grid-fragment
+    mediaType: text/html
+    isHTML: true
+    notAlternative: true
 
 outputs:
   home:
@@ -31,6 +37,7 @@ outputs:
   term:
     - HTML
     - fragment
+    - grid-fragment
 
 taxonomies:
   tag: tags

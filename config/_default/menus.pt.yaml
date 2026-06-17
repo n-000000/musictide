@@ -17,6 +17,3 @@ main:
   - name: Agenda
     url: /categories/agenda/
     weight: 60
-  - name: Colaboradores
-    url: /authors/
-    weight: 70

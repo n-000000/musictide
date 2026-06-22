@@ -117,32 +117,11 @@
     var el = document.querySelector('[data-sentinel]:not([data-observed])');
     if (el) { el.dataset.observed = '1'; observe(el); }
   }
-  function mergeMonths() {
-    // When a page boundary splits a month, the next fragment starts a new
-    // month group for the same month. Move its cards into the existing
-    // section and remove the duplicate heading + wrapper.
-    document.querySelectorAll('h3[data-month]').forEach(function (h3) {
-      var month = h3.dataset.month;
-      var existing = document.querySelector('section[data-month-cards="' + CSS.escape(month) + '"]');
-      var thisSection = h3.nextElementSibling;
-      if (existing && thisSection && existing !== thisSection) {
-        while (thisSection.firstChild) existing.appendChild(thisSection.firstChild);
-        var wrapper = h3.parentElement;
-        h3.remove();
-        thisSection.remove();
-        if (wrapper && wrapper.hasAttribute('data-month-group')) wrapper.remove();
-      }
-    });
-  }
-  document.addEventListener('htmx:afterSettle', function () { mergeMonths(); attachSentinel(); });
+  // mergeMonths removed: month-grouped list views are deleted; the grid feed has
+  // no month headings. The #main-content afterSwap handler is removed too —
+  // spa-router.js now owns scroll-reset + mobile-menu-close on its region swaps.
+  document.addEventListener('htmx:afterSettle', attachSentinel);
   document.addEventListener('DOMContentLoaded', attachSentinel);
-  document.addEventListener('htmx:afterSwap', function (e) {
-    if (e.detail.target && e.detail.target.id === 'main-content') {
-      window.scrollTo(0, 0);
-      var toggle = document.getElementById('mobile-menu-toggle');
-      if (toggle) toggle.checked = false;
-    }
-  });
 })();
 </script>
 

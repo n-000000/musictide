@@ -28,6 +28,12 @@ outputFormats:
     mediaType: text/html
     isHTML: true
     notAlternative: true
+  feed-fragment:
+    name: feed-fragment
+    baseName: feed-fragment
+    mediaType: text/html
+    isHTML: true
+    notAlternative: true
 
 outputs:
   home:
@@ -36,27 +42,21 @@ outputs:
     - JSON
   term:
     - HTML
-    - fragment
+    - feed-fragment
     - grid-fragment
+  page:
+    - HTML
+    - fragment
 
 taxonomies:
-  tag: tags
   category: categories
-  author: authors
-  series: series
 
 related:
   threshold: 0
   toLower: false
   indices:
-    - name: tags
-      weight: 100
     - name: categories
       weight: 100
-    - name: series
-      weight: 50
-    - name: authors
-      weight: 20
     - name: date
       weight: 10
       pattern: "200601"

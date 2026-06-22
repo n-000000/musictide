@@ -1,0 +1,11 @@
+heroFollowsFilter: false
+
+dimensions:
+  categories:
+    enabled: true
+  events:
+    enabled: false   # flip on when events content model is ready
+  tags:
+    enabled: false
+  authors:
+    enabled: false

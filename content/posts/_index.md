@@ -1,7 +1,6 @@
 ---
 title: "Artigos"
 outputs:
-  - HTML
-  - fragment
+  - feed-fragment
   - grid-fragment
 ---

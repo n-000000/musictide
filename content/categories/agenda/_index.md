@@ -1,4 +1,4 @@
 ---
 title: Agenda
-color: secondary-700
+color: "#dc2626"
 ---

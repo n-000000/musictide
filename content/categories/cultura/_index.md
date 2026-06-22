@@ -1,4 +1,4 @@
 ---
 title: Cultura
-color: primary-700
+color: "#d97706"
 ---

@@ -1,4 +1,4 @@
 ---
 title: Nacional
-color: secondary-500
+color: "#0891b2"
 ---

@@ -1,4 +1,4 @@
 ---
 title: Espinho
-color: primary-300
+color: "#3b82f6"
 ---

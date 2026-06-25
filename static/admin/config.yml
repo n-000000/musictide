@@ -171,12 +171,11 @@ collections:
       - label: Posição
         name: placement
         widget: select
-        default: grelha
+        default: conteudo
         options:
+          - { label: "Conteúdo (imagem 3:2 — grelha + topo da galeria)", value: conteudo }
           - { label: "Rodapé (banner fino, sempre visível)", value: rodape }
-          - { label: "Grelha (célula 3:2 no fluxo)", value: grelha }
-          - { label: "Artigo (banner antes e depois do texto)", value: artigo }
-        hint: "Onde o anúncio aparece. Apenas um anúncio de Rodapé deve estar activo de cada vez."
+        hint: "Conteúdo = imagem 3:2 (aparece na grelha do feed e no topo da galeria dos artigos). Rodapé = banner fino sempre visível; apenas um Rodapé activo de cada vez."
 
       - label: Notas Internas
         name: notes
